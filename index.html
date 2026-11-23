@@ -142,9 +142,7 @@ $('standings').onclick=()=>{$('seasonNote').textContent='DIVISION STANDINGS · Y
 $('quarter').onclick=()=>{quarterLength=quarterLength%3+1;$('quarter').textContent=quarterLength+' MIN';};
 $('difficulty').onclick=()=>{difficulty=difficulty%3+1;$('difficulty').textContent=['EASY','MEDIUM','HARD'][difficulty-1];};
 $('soundBtn').onclick=$('soundOption').onclick=()=>{sound=!sound;$('soundBtn').textContent=sound?'♫ ON':'♫ OFF';$('soundOption').textContent=sound?'ON':'OFF';};
-$('timeout').onclick=()=>{if(gameState.over)return;gameState.timeouts=Math.max(0,gameState.timeouts-1);$('hint').textContent=gameState.timeouts+' TIMEOUTS LEFT THIS HALF.'};
 $('pauseGame').onclick=()=>showModal('GAME PAUSED','Take a breather, Coach.',[['RESUME',closeModal],['QUIT GAME',()=>{closeModal();cancelAnimationFrame(raf);show('hub');updateHub();}]]);
-$('audible').onclick=()=>{if(gameState.over)return;formation=(formation+1)%3;setupPlayers();$('hint').textContent='NEW PLAY CALLED · CHECK YOUR RECEIVER ROUTES.';render();};
 const canvas=$('field'),ctx=canvas.getContext('2d'),W=960,H=540;
 let gameState={},players=[],defenders=[],ball=null,drag=null,dragStart=null,raf=0,formation=0;
 const playBook=[
@@ -318,9 +316,6 @@ $('hikeBtn').onclick=()=>{if(gameState.phase!=='ready'||gameState.over)return;hi
 canvas.addEventListener('pointerdown',e=>{if(gameState.phase==='running'&&gameState.carrier){drag=point(e);dragStart={...drag};canvas.setPointerCapture(e.pointerId);return;}if(gameState.phase!=='live'||gameState.over)return;let p=point(e),qb=players[0];if(Math.hypot(p.x-qb.x,p.y-qb.y)<125||p.x<qb.x+70){drag=p;dragStart={...p};canvas.setPointerCapture(e.pointerId);render();}});
 canvas.addEventListener('pointermove',e=>{if(!drag)return;let p=point(e);drag=p;if(gameState.phase==='running'&&gameState.carrier){return;}render();});
 canvas.addEventListener('pointerup',e=>{if(!drag)return;let end=point(e),start=dragStart||drag;drag=null;dragStart=null;if(gameState.phase==='running'&&gameState.carrier){let dx=end.x-start.x,dy=end.y-start.y;if(Math.abs(dy)>Math.abs(dx))runForward(dy>0?4:-4);else if(dx>15){let p=gameState.carrier;runForward(0,true);$('hint').textContent='DIVE FORWARD!';}render();return;}if(gameState.phase!=='live')return;let qb=players[0],dx=end.x-qb.x,dy=end.y-qb.y;if(Math.hypot(dx,dy)<20){$('hint').textContent='PULL BACK FROM THE QB TO AIM YOUR PASS.';return;}let target={x:Math.max(qb.x+45,Math.min(W-40,qb.x+dx*1.8)),y:Math.max(35,Math.min(H-35,qb.y+dy*1.8))};$('hint').textContent='PASS IN THE AIR…';startPass(target);});
-$('timeout').onclick=()=>{$('hint').textContent=gameState.timeouts>0?'TIMEOUT CALLED · '+(--gameState.timeouts)+' LEFT.':'NO TIMEOUTS LEFT.';};
-$('audible').onclick=()=>{formation=(formation+1)%3;setupPlayers();$('hint').textContent='AUDIBLE · NEW ROUTES SET.';};
-$('timeout').addEventListener('contextmenu',e=>e.preventDefault());
 $('game').addEventListener('click',e=>{if(e.target.id==='game')return;});
 document.addEventListener('keydown',e=>{if($('game').classList.contains('hidden'))return;if(e.key==='Escape')showModal('PAUSED','Take a breather, Coach.',[['RESUME',closeModal],['QUIT GAME',()=>{closeModal();show('hub');}]]);if(gameState.phase==='running'&&gameState.carrier){if(e.key==='ArrowUp')runForward(-4);if(e.key==='ArrowDown')runForward(4);if(e.key==='ArrowRight')runForward(0,true);}});
 })();
