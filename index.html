@@ -147,7 +147,7 @@ const canvas=$('field'),ctx=canvas.getContext('2d'),W=960,H=540;
 let gameState={},players=[],defenders=[],ball=null,drag=null,dragStart=null,raf=0,formation=0;
 // QB ratings drive the slingshot throw. Ratings are on a 1–10 scale.
 const qbStats={accuracy:7,strength:7,stamina:8,speed:6};
-let aimPull=null,aimPointer=null,activePointers=new Set(),bulletMode=false,throwScatter=0;
+let aimPull=null,aimPointer=null,aimPointerOrigin=null,activePointers=new Set(),bulletMode=false,throwScatter=0;
 const playBook=[
  {name:'SPLIT RECEIVER',spots:[[0,-132],[0,132],[-48,-34],[-48,34]],routes:[[[0,-132],[75,-132],[170,-132],[265,-112]],[[0,132],[65,132],[130,95],[205,95]], [[-48,-34],[20,-55],[105,-55]], [[-48,34],[35,34],[95,10]]]},
  {name:'CROSSING ROUTES',spots:[[0,-145],[0,145],[-45,-28],[-45,28]],routes:[[[0,-145],[65,-145],[145,-70],[235,-70]],[[0,145],[65,145],[145,65],[235,65]], [[-45,-28],[35,-28],[95,-90]], [[-45,28],[35,28],[95,90]]]},
@@ -275,6 +275,15 @@ function moveAlong(points,t){
  let lengths=[],total=0;for(let i=1;i<points.length;i++){let d=Math.hypot(points[i].x-points[i-1].x,points[i].y-points[i-1].y);lengths.push(d);total+=d;}
  let dist=Math.min(1,t)*total;for(let i=0;i<lengths.length;i++){if(dist<=lengths[i]){let q=dist/lengths[i];return{x:points[i].x+(points[i+1].x-points[i].x)*q,y:points[i].y+(points[i+1].y-points[i].y)*q};}dist-=lengths[i];}return points[points.length-1];
 }
+function setupForNext(){
+ // Reset the formation for the next snap without leaving the game screen.
+ if(gameState.down>4){startDefense();return;}
+ gameState.plays=(gameState.plays||0)+1;
+ setupPlayers();
+ updateHUD();
+ render();
+ $('hint').textContent='NEXT PLAY · '+currentPlay.name+' · PULL BACK FROM THE QB TO PASS.';
+}
 function hike(){
  if(snapStarted||gameState.phase!=='ready')return;
  snapStarted=true;gameState.phase='live';gameState.over=false;routeProgress=0;qbPressure=0;aimPull=null;bulletMode=false;updateHUD();
@@ -284,10 +293,18 @@ function hike(){
   if(gameState.phase!=='live')return;
   let dt=Math.min(2,(now-last)/16.67);last=now;advanceRoutes(.0065*dt);
   // Offensive linemen hold their blocks while rushers close in on the quarterback.
-  defenders.forEach((d,i)=>{if(i<5){d.x-=.9*dt;d.y+=(270-d.y)*.006*dt;}else{let target=i<7?players[0]:players[i===7?2:i===8?3:0];d.x+=(target.x-d.x)*.012*dt;d.y+=(target.y-d.y)*.012*dt;}});
+  defenders.forEach((d,i)=>{
+   if(i<5){
+    // Rushers are delayed by the offensive line, then can break through.
+    d.blockedFrames=(d.blockedFrames||0)+dt;
+    const blocker=players.filter(p=>p.role==='ol').sort((a,b)=>Math.hypot(a.x-d.x,a.y-d.y)-Math.hypot(b.x-d.x,b.y-d.y))[0];
+    const held=d.blockedFrames<78&&blocker&&Math.hypot(blocker.x-d.x,blocker.y-d.y)<78;
+    if(!held){d.x-=1.45*dt;d.y+=(players[0].y-d.y)*.009*dt;}
+   }else{let target=i<7?players[0]:players[i===7?2:i===8?3:0];d.x+=(target.x-d.x)*.012*dt;d.y+=(target.y-d.y)*.012*dt;}
+  });
   qbPressure=Math.min(1,qbPressure+.003*dt);
   if(defenders.slice(0,5).some(d=>Math.hypot(d.x-players[0].x,d.y-players[0].y)<34)){
-   gameState.phase='ready';gameState.down++;snapStarted=false;gameState.spot=Math.max(5,gameState.spot-2);$('hint').textContent='SACK! THE DEFENSE GOT THROUGH THE LINE.';setupForNext();return;
+   gameState.phase='ready';snapStarted=false;gameState.spot=Math.max(5,gameState.spot-2);gameState.toGo+=2;gameState.down++;$('hint').textContent='SACK! THE PASS RUSH BROKE THROUGH. LOST 2 YARDS.';setupForNext();return;
   }
   render();raf=requestAnimationFrame(tick);
  }
@@ -366,20 +383,31 @@ $('game').addEventListener('pointerdown',e=>{
  if(e.target.id==='pauseGame'||e.target.id==='hikeBtn')return;
  activePointers.add(e.pointerId);
  if(gameState.phase==='ready'&&!gameState.over){hike();}
- if(gameState.phase==='live'&&!gameState.over&&!aimPointer){aimPointer=e.pointerId;const p=clientToField(e);aimPull={start:p,end:p};$('game').setPointerCapture(e.pointerId);render();}
+ if(gameState.phase==='live'&&!gameState.over&&!aimPointer){
+  aimPointer=e.pointerId;
+  aimPointerOrigin=clientToField(e);
+  const qb={x:players[0].x+18,y:players[0].y-12};
+  aimPull={start:qb,end:{...qb}};
+  $('game').setPointerCapture(e.pointerId);render();
+ }
  else if(gameState.phase==='live'&&aimPointer!==e.pointerId){bulletMode=true;}
 });
 $('game').addEventListener('pointermove',e=>{
- if(aimPointer===e.pointerId&&aimPull){aimPull.end=clientToField(e);render();}
+ if(aimPointer===e.pointerId&&aimPull){
+  const p=clientToField(e),origin=aimPointerOrigin||p;
+  // The pull begins at the quarterback. Finger movement adds pull distance from zero.
+  aimPull.end={x:aimPull.start.x+(p.x-origin.x),y:aimPull.start.y+(p.y-origin.y)};
+  render();
+ }
 });
 $('game').addEventListener('pointerup',e=>{
  activePointers.delete(e.pointerId);
  if(aimPointer!==e.pointerId)return;
- const pull=aimPull;aimPointer=null;
- if(pull&&gameState.phase==='live')startPass(pull);
+ const pull=aimPull;aimPointer=null;aimPointerOrigin=null;
+ if(pull&&gameState.phase==='live'&&Math.hypot(pull.start.x-pull.end.x,pull.start.y-pull.end.y)>=14)startPass(pull);
  aimPull=null;bulletMode=activePointers.size>0;render();
 });
-$('game').addEventListener('pointercancel',e=>{activePointers.delete(e.pointerId);if(aimPointer===e.pointerId){aimPointer=null;aimPull=null;bulletMode=false;render();}});
+$('game').addEventListener('pointercancel',e=>{activePointers.delete(e.pointerId);if(aimPointer===e.pointerId){aimPointer=null;aimPointerOrigin=null;aimPull=null;bulletMode=false;render();}});
 // Running back controls remain swipe-based on the field.
 canvas.addEventListener('pointerdown',e=>{if(gameState.phase==='running'&&gameState.carrier){drag=point(e);dragStart={...drag};canvas.setPointerCapture(e.pointerId);}});
 canvas.addEventListener('pointermove',e=>{if(drag){drag=point(e);}});
