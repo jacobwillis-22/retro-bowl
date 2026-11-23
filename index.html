@@ -149,14 +149,25 @@ const canvas=$('field'),ctx=canvas.getContext('2d'),W=960,H=540;
 let gameState={},players=[],defenders=[],ball=null,drag=null,raf=0,formation=0;
 function newDrive(){gameState={score:0,quarter:1,clock:quarterLength*60,down:1,toGo:10,spot:20,timeouts:2,over:false,carrier:null,phase:'ready',plays:0};formation=0;setupPlayers();updateHUD();$('hint').textContent='DRAG BACK FROM YOUR QB, AIM INTO OPEN SPACE, RELEASE TO THROW.';render();}
 function setupPlayers(){let s=gameState.spot*8.8+38;players=[{x:s,y:270,n:'QB',role:'qb'},{x:s+135,y:285,n:'1',role:'wr'},{x:s+160,y:430,n:'2',role:'wr'},{x:s+90,y:335,n:'3',role:'te'},{x:s+60,y:360,n:'RB',role:'rb'}];if(formation===1){players[1].y=190;players[2].y=350;}if(formation===2){players[1].x+=70;players[2].x+=50;players[3].x+=30;}defenders=[{x:s+230,y:300},{x:s+280,y:440},{x:s+380,y:365},{x:s+450,y:285},{x:s+500,y:470}];ball={x:players[0].x+15,y:players[0].y-10};gameState.carrier=null;gameState.phase='ready';gameState.over=false;render();}
-function drawPlayer(p,team='blue',dir='right'){
-const jersey=team==='blue'?'#2b59c3':'#d62828',helmet=team==='blue'?'#ffffff':'#d62828';
-ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(Math.floor(p.x-6),Math.floor(p.y+12),16,4);
-ctx.fillStyle='#ffffff';ctx.fillRect(Math.floor(p.x-4),Math.floor(p.y+6),4,8);ctx.fillRect(Math.floor(p.x+3),Math.floor(p.y+6),4,8);
-ctx.fillStyle=jersey;ctx.fillRect(Math.floor(p.x-6),Math.floor(p.y-6),16,13);
-ctx.fillStyle='#ffffff';ctx.fillRect(Math.floor(p.x-2),Math.floor(p.y-3),6,5);
-ctx.fillStyle=helmet;ctx.fillRect(Math.floor(p.x-4),Math.floor(p.y-16),12,11);
-ctx.fillStyle='#adb5bd';ctx.fillRect(Math.floor(p.x+(dir==='right'?7:-6)),Math.floor(p.y-12),4,4);
+const playerPalette={W:'#ffffff',O:'#2b59c3',B:'#2b59c3',S:'#d49a6a',D:'#8c533e',F:'#c5d1e0',K:'#751c12',G:'#315f20'};
+const standingSprite=[
+"...............","......WWW......",".....WOWWW.....",".....WWSS......",".....WWFS......","...OOOOFF......","..WOOOOOKW.....","..SSSSSSKS.....","...SSSSSKS.....","....OOOOKO.....","....WWWWWW.....","....WWWWWW.....",".....OW.WW.....",".....OW.OO.....",".....OO.OO.....","....GWWWWWWG...","...GGGGGGGGGG..","....GGGGGGGG...","..............."];
+const runningSprite=[
+"...............","........WWW....",".......WBWWW...",".......WWDD....","......BWWFD....",".....BWWDFF....",".....BDDDDK....",".....BDDDDDK...",".....BDDDDDD...","......WWWW.....","....WWWWFF.....","..WBBDBWFF.....","..WBB.B.DDD....","..W.....BBB....","........WWWW...",".GGGGGGGGGGGG..","...............","...............","..............."];
+function drawPlayer(p,team='blue',dir='right',index=0){
+const grid=(gameState.carrier===p&&gameState.phase==='running')?runningSprite:standingSprite;
+const jersey=team==='blue'?['#17498c','#2b59c3','#2878ad'][index%3]:['#c62828','#d62828','#8f2020'][index%3];
+const skin=(index%2===0)?'#d49a6a':'#8c533e',pixel=3;
+const left=Math.round(p.x-grid[0].length*pixel/2),top=Math.round(p.y-grid.length*pixel/2);
+ctx.fillStyle='rgba(0,0,0,.3)';ctx.fillRect(left+7*pixel,top+17*pixel,24,5);
+for(let y=0;y<grid.length;y++)for(let x=0;x<grid[y].length;x++){
+const ch=grid[y][x];if(ch==='.')continue;
+let color=playerPalette[ch]||'#fff';
+if(ch==='O'||ch==='B')color=jersey;
+if(ch==='S'||ch==='D')color=skin;
+if(ch==='G')color='#315f20';
+ctx.fillStyle=color;ctx.fillRect(left+x*pixel,top+y*pixel,pixel,pixel);
+}
 }
 function pixelRect(x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.floor(x),Math.floor(y),Math.floor(w),Math.floor(h));}
 function drawPixelStar(x,y,color){const rows=['   XX   ','   XX   ','XXXXXXXX',' XXXXXX ','  XXXX  ',' XX  XX ','XX    XX'];rows.forEach((row,ry)=>[...row].forEach((c,cx)=>{if(c==='X'){pixelRect(x+cx*4+2,y+ry*4+3,4,4,'#000');pixelRect(x+cx*4,y+ry*4,4,4,color);}}));}
@@ -183,7 +194,7 @@ ctx.fillStyle='rgba(255,255,255,.88)';ctx.font='bold 28px monospace';ctx.textAli
 // Line of scrimmage and first-down marker
 let los=gameState.spot*8.8+38;pixelRect(los,220,4,320,'#2f8ff0');pixelRect(Math.min(W-38,los+gameState.toGo*8.8),220,4,320,'#ffda48');
 // Player sprites, blue offense and red defense
-players.forEach((p,i)=>drawPlayer(p,'blue','right'));defenders.forEach(p=>drawPlayer(p,'red','left'));
+players.forEach((p,i)=>drawPlayer(p,'blue','right',i));defenders.forEach((p,i)=>drawPlayer(p,'red','left',i+1));
 if(ball){ctx.fillStyle='#71391e';ctx.beginPath();ctx.ellipse(ball.x,ball.y,13,8,-.35,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
 if(drag){ctx.strokeStyle='#fff';ctx.lineWidth=4;ctx.setLineDash([10,9]);ctx.beginPath();ctx.moveTo(players[0].x,players[0].y-18);ctx.lineTo(drag.x,drag.y);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(drag.x,drag.y,7,0,Math.PI*2);ctx.fill();}
 if(gameState.phase==='running'&&gameState.carrier){ctx.strokeStyle='#ffed8a';ctx.lineWidth=4;ctx.beginPath();ctx.arc(gameState.carrier.x,gameState.carrier.y,24,0,Math.PI*2);ctx.stroke();}
