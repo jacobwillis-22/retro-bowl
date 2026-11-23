@@ -148,17 +148,42 @@ $('audible').onclick=()=>{if(gameState.over)return;formation=(formation+1)%3;set
 const canvas=$('field'),ctx=canvas.getContext('2d'),W=960,H=540;
 let gameState={},players=[],defenders=[],ball=null,drag=null,raf=0,formation=0;
 function newDrive(){gameState={score:0,quarter:1,clock:quarterLength*60,down:1,toGo:10,spot:20,timeouts:2,over:false,carrier:null,phase:'ready',plays:0};formation=0;setupPlayers();updateHUD();$('hint').textContent='DRAG BACK FROM YOUR QB, AIM INTO OPEN SPACE, RELEASE TO THROW.';render();}
-function setupPlayers(){let s=gameState.spot*8.8+38;players=[{x:s,y:270,n:'QB',role:'qb'},{x:s+135,y:105,n:'1',role:'wr'},{x:s+160,y:430,n:'2',role:'wr'},{x:s+90,y:180,n:'3',role:'te'},{x:s+60,y:360,n:'RB',role:'rb'}];if(formation===1){players[1].y=190;players[2].y=350;}if(formation===2){players[1].x+=70;players[2].x+=50;players[3].x+=30;}defenders=[{x:s+230,y:155},{x:s+280,y:365},{x:s+380,y:255},{x:s+450,y:95},{x:s+500,y:435}];ball={x:players[0].x+15,y:players[0].y-10};gameState.carrier=null;gameState.phase='ready';gameState.over=false;render();}
-function drawPlayer(p,color){ctx.fillStyle='#142c40';ctx.fillRect(p.x-14,p.y+16,28,8);ctx.fillStyle=color;ctx.fillRect(p.x-14,p.y-8,28,27);ctx.fillStyle='#f2c79d';ctx.fillRect(p.x-10,p.y-24,20,16);ctx.fillStyle='#fff';ctx.font='bold 13px Arial';ctx.textAlign='center';ctx.fillText(p.n,p.x,p.y+9);}
+function setupPlayers(){let s=gameState.spot*8.8+38;players=[{x:s,y:270,n:'QB',role:'qb'},{x:s+135,y:285,n:'1',role:'wr'},{x:s+160,y:430,n:'2',role:'wr'},{x:s+90,y:335,n:'3',role:'te'},{x:s+60,y:360,n:'RB',role:'rb'}];if(formation===1){players[1].y=190;players[2].y=350;}if(formation===2){players[1].x+=70;players[2].x+=50;players[3].x+=30;}defenders=[{x:s+230,y:300},{x:s+280,y:440},{x:s+380,y:365},{x:s+450,y:285},{x:s+500,y:470}];ball={x:players[0].x+15,y:players[0].y-10};gameState.carrier=null;gameState.phase='ready';gameState.over=false;render();}
+function drawPlayer(p,team='blue',dir='right'){
+const jersey=team==='blue'?'#2b59c3':'#d62828',helmet=team==='blue'?'#ffffff':'#d62828';
+ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(Math.floor(p.x-6),Math.floor(p.y+12),16,4);
+ctx.fillStyle='#ffffff';ctx.fillRect(Math.floor(p.x-4),Math.floor(p.y+6),4,8);ctx.fillRect(Math.floor(p.x+3),Math.floor(p.y+6),4,8);
+ctx.fillStyle=jersey;ctx.fillRect(Math.floor(p.x-6),Math.floor(p.y-6),16,13);
+ctx.fillStyle='#ffffff';ctx.fillRect(Math.floor(p.x-2),Math.floor(p.y-3),6,5);
+ctx.fillStyle=helmet;ctx.fillRect(Math.floor(p.x-4),Math.floor(p.y-16),12,11);
+ctx.fillStyle='#adb5bd';ctx.fillRect(Math.floor(p.x+(dir==='right'?7:-6)),Math.floor(p.y-12),4,4);
+}
+function pixelRect(x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.floor(x),Math.floor(y),Math.floor(w),Math.floor(h));}
+function drawPixelStar(x,y,color){const rows=['   XX   ','   XX   ','XXXXXXXX',' XXXXXX ','  XXXX  ',' XX  XX ','XX    XX'];rows.forEach((row,ry)=>[...row].forEach((c,cx)=>{if(c==='X'){pixelRect(x+cx*4+2,y+ry*4+3,4,4,'#000');pixelRect(x+cx*4,y+ry*4,4,4,color);}}));}
 function render(){
 ctx.clearRect(0,0,W,H);
-for(let x=0;x<W;x+=88){ctx.fillStyle=(x/88)%2?'#32854a':'#388f51';ctx.fillRect(x,0,88,H);}
-ctx.fillStyle='#1f7540';ctx.fillRect(0,0,36,H);ctx.fillRect(W-36,0,36,H);
-ctx.strokeStyle='#ffffffc9';ctx.lineWidth=3;
-for(let x=36;x<W-25;x+=88){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();ctx.fillStyle='white';ctx.font='bold 18px Arial';ctx.textAlign='center';let yard=Math.round((x-(gameState.spot*8.8+38))/8.8+gameState.spot);if(yard>=0&&yard<=100)ctx.fillText(String(yard),x,28);ctx.fillRect(x,85,4,12);ctx.fillRect(x,H-97,4,12);}
-let los=gameState.spot*8.8+38;ctx.fillStyle='#2f8ff0';ctx.fillRect(los,0,4,H);ctx.fillStyle='#ffda48';ctx.fillRect(Math.min(W-38,los+gameState.toGo*8.8),0,4,H);
-ctx.fillStyle='#f7d65c';ctx.font='bold 20px Arial';ctx.textAlign='center';ctx.fillText('SUNDAY',W/2,70);
-players.forEach((p,i)=>drawPlayer(p,i===0?'#f3bd45':uniform===1?'#e8e8e8':'#e7e9ed'));defenders.forEach(p=>drawPlayer(p,'#c94d49'));
+// Stadium header and pixel title
+pixelRect(0,0,W,124,'#1f242d');
+drawPixelStar(24,30,'#d62828');drawPixelStar(80,30,'#fff');drawPixelStar(136,30,'#2b59c3');
+drawPixelStar(792,30,'#2b59c3');drawPixelStar(848,30,'#fff');drawPixelStar(904,30,'#d62828');
+ctx.textAlign='center';ctx.font='bold 43px monospace';ctx.fillStyle='#000';ctx.fillText('RETRO BOWL',484,77);ctx.fillStyle='#fff';ctx.fillText('RETRO BOWL',480,73);
+// Pixel crowd, wall and sideline
+pixelRect(0,124,W,48,'#3a3f47');const crowd=['#2b59c3','#fff','#d62828','#f4a261','#8d99ae'];
+for(let y=128;y<164;y+=8)for(let x=4;x<956;x+=8)pixelRect(x,y,6,6,crowd[(x*7+y*13)%crowd.length|0]);
+pixelRect(0,172,W,8,'#d9d9d9');pixelRect(0,180,W,40,'#6c757d');
+pixelRect(228,180,216,18,'#2b59c3');pixelRect(516,180,216,18,'#2b59c3');pixelRect(452,182,56,18,'#f77f00');
+for(let x=32;x<928;x+=28){if(x>220&&x<740&&x%56===0)continue;let blue=x>210&&x<750;pixelRect(x,178,8,6,'#f1c27d');pixelRect(x-2,184,12,12,blue?'#2b59c3':'#495057');pixelRect(x,196,4,8,'#212529');pixelRect(x+6,196,4,8,'#212529');}
+// Green field with alternating mowing stripes
+pixelRect(0,220,W,320,'#ffffff');
+for(let i=0;i<10;i++)pixelRect(i*96,228,96,312,i%2===0?'#38761d':'#438524');
+for(let x=84;x<=876;x+=96){pixelRect(x,228,2,312,'rgba(255,255,255,.8)');}
+for(let x=20;x<960;x+=20){pixelRect(x,236,2,5,'#fff');pixelRect(x,356,2,5,'#fff');pixelRect(x,408,2,5,'#fff');pixelRect(x,530,2,5,'#fff');}
+ctx.fillStyle='rgba(255,255,255,.88)';ctx.font='bold 28px monospace';ctx.textAlign='center';
+[{text:'30',x:84},{text:'40',x:276},{text:'50',x:468},{text:'40',x:660},{text:'30',x:852}].forEach(n=>{ctx.fillText(n.text,n.x,515);ctx.save();ctx.translate(n.x,270);ctx.rotate(Math.PI);ctx.fillText(n.text,0,0);ctx.restore();});
+// Line of scrimmage and first-down marker
+let los=gameState.spot*8.8+38;pixelRect(los,220,4,320,'#2f8ff0');pixelRect(Math.min(W-38,los+gameState.toGo*8.8),220,4,320,'#ffda48');
+// Player sprites, blue offense and red defense
+players.forEach((p,i)=>drawPlayer(p,'blue','right'));defenders.forEach(p=>drawPlayer(p,'red','left'));
 if(ball){ctx.fillStyle='#71391e';ctx.beginPath();ctx.ellipse(ball.x,ball.y,13,8,-.35,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
 if(drag){ctx.strokeStyle='#fff';ctx.lineWidth=4;ctx.setLineDash([10,9]);ctx.beginPath();ctx.moveTo(players[0].x,players[0].y-18);ctx.lineTo(drag.x,drag.y);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(drag.x,drag.y,7,0,Math.PI*2);ctx.fill();}
 if(gameState.phase==='running'&&gameState.carrier){ctx.strokeStyle='#ffed8a';ctx.lineWidth=4;ctx.beginPath();ctx.arc(gameState.carrier.x,gameState.carrier.y,24,0,Math.PI*2);ctx.stroke();}
