@@ -147,7 +147,7 @@ const canvas=$('field'),ctx=canvas.getContext('2d'),W=960,H=540;
 let gameState={},players=[],defenders=[],ball=null,drag=null,dragStart=null,raf=0,formation=0;
 // QB ratings drive the slingshot throw. Ratings are on a 1–10 scale.
 const qbStats={accuracy:7,strength:7,stamina:8,speed:6};
-let aimPull=null,aimPointer=null,aimPointerOrigin=null,activePointers=new Set(),bulletMode=false,throwScatter=0;
+let aimPull=null,aimPointer=null,aimPointerOrigin=null,activePointers=new Set(),bulletMode=false,throwScatter=0,cameraX=0;
 const playBook=[
  {name:'SPLIT RECEIVER',spots:[[0,-132],[0,132],[-48,-34],[-48,34]],routes:[[[0,-132],[75,-132],[170,-132],[265,-112]],[[0,132],[65,132],[130,95],[205,95]], [[-48,-34],[20,-55],[105,-55]], [[-48,34],[35,34],[95,10]]]},
  {name:'CROSSING ROUTES',spots:[[0,-145],[0,145],[-45,-28],[-45,28]],routes:[[[0,-145],[65,-145],[145,-70],[235,-70]],[[0,145],[65,145],[145,65],[235,65]], [[-45,-28],[35,-28],[95,-90]], [[-45,28],[35,28],[95,90]]]},
@@ -224,13 +224,16 @@ for(let y=128;y<164;y+=8)for(let x=4;x<956;x+=8)pixelRect(x,y,6,6,crowd[(x*7+y*1
 pixelRect(0,172,W,8,'#d9d9d9');pixelRect(0,180,W,40,'#6c757d');
 pixelRect(228,180,216,18,'#2b59c3');pixelRect(516,180,216,18,'#2b59c3');pixelRect(452,182,56,18,'#f77f00');
 for(let x=32;x<928;x+=28){if(x>220&&x<740&&x%56===0)continue;let blue=x>210&&x<750;pixelRect(x,178,8,6,'#f1c27d');pixelRect(x-2,184,12,12,blue?'#2b59c3':'#495057');pixelRect(x,196,4,8,'#212529');pixelRect(x+6,196,4,8,'#212529');}
-// Green field with alternating mowing stripes
-pixelRect(0,220,W,320,'#ffffff');
-for(let i=0;i<10;i++)pixelRect(i*96,228,96,312,i%2===0?'#38761d':'#438524');
-for(let x=84;x<=876;x+=96){pixelRect(x,228,2,312,'rgba(255,255,255,.8)');}
-for(let x=20;x<960;x+=20){pixelRect(x,236,2,5,'#fff');pixelRect(x,356,2,5,'#fff');pixelRect(x,408,2,5,'#fff');pixelRect(x,530,2,5,'#fff');}
+// Follow the play so the offense stays in view as the ball advances downfield.
+const focus=gameState.carrier||players[0];cameraX=Math.max(0,Math.min(820,(focus?.x||480)-W*.48));
+ctx.save();ctx.translate(-cameraX,0);
+// Long continuous turf lets the camera scroll without exposing empty space.
+pixelRect(-cameraX,220,1900,320,'#ffffff');
+for(let i=0;i<20;i++)pixelRect(i*96,228,96,312,i%2===0?'#38761d':'#438524');
+for(let x=84;x<=1800;x+=96){pixelRect(x,228,2,312,'rgba(255,255,255,.8)');}
+for(let x=20;x<1900;x+=20){pixelRect(x,236,2,5,'#fff');pixelRect(x,356,2,5,'#fff');pixelRect(x,408,2,5,'#fff');pixelRect(x,530,2,5,'#fff');}
 ctx.fillStyle='rgba(255,255,255,.88)';ctx.font='bold 28px monospace';ctx.textAlign='center';
-[{text:'30',x:84},{text:'40',x:276},{text:'50',x:468},{text:'40',x:660},{text:'30',x:852}].forEach(n=>{ctx.fillText(n.text,n.x,515);ctx.fillText(n.text,n.x,265);});
+for(let x=84,n=30;x<1800;x+=192,n=(n===50?30:n+10)){ctx.fillText(String(n),x,515);ctx.fillText(String(n),x,265);}
 // Line of scrimmage and first-down marker
 let los=yardToX(gameState.spot);pixelRect(los,228,3,312,'#2f8ff0');pixelRect(Math.min(W-8,los+gameState.toGo*19.2),228,3,312,'#ffda48');
 // Player sprites, blue offense and red defense
@@ -238,6 +241,7 @@ drawRoutes();players.forEach((p,i)=>drawPlayer(p,'blue','right',i));defenders.fo
 if(ball){ctx.fillStyle='#71391e';ctx.fillRect(Math.round(ball.x-9),Math.round(ball.y-4),18,8);ctx.fillStyle='#fff';ctx.fillRect(Math.round(ball.x-1),Math.round(ball.y-3),2,6);ctx.fillRect(Math.round(ball.x-5),Math.round(ball.y-1),2,2);ctx.fillRect(Math.round(ball.x+3),Math.round(ball.y-1),2,2);}
 if(aimPull&&gameState.phase==='live')drawAimArc();
 if((gameState.phase==='running'||gameState.phase==='defense')&&gameState.carrier){ctx.strokeStyle='#ffed8a';ctx.lineWidth=4;ctx.beginPath();ctx.arc(gameState.carrier.x,gameState.carrier.y,24,0,Math.PI*2);ctx.stroke();}
+ctx.restore();
 }
 function currentQBStats(){
  let fatigue=Math.max(0,(gameState.quarter||1)-2)*Math.max(0,9-qbStats.stamina)*.07;
@@ -246,11 +250,12 @@ function currentQBStats(){
 function aimVelocity(){
  if(!aimPull)return null;
  const stats=currentQBStats(),dx=aimPull.start.x-aimPull.end.x,dy=aimPull.end.y-aimPull.start.y;
- const pull=Math.hypot(dx,dy),power=Math.max(0,Math.min(1,pull/190));
- const vx=7.2+power*(7.5+stats.strength*1.15);
- // Pulling down creates a high lob; pulling up creates a flatter bullet.
+ const pull=Math.hypot(dx,dy),power=Math.max(0,Math.min(1,Math.max(0,pull-18)/270));
+ // Throw power grows from zero as the sling stretches away from the quarterback.
+ const vx=3.2+power*(10+stats.strength*.75);
+ // Pulling down creates a higher lob; pulling up creates a flatter throw.
  const angle=Math.max(-.48,Math.min(.78,dy/Math.max(55,pull)*.95));
- const vy=bulletMode?(-1.0-angle*1.7):(-7.6-angle*5.4);
+ const vy=bulletMode?(-1.0-angle*1.7):(-8.8-angle*5.2);
  return {vx,vy,power,stats};
 }
 function drawAimArc(){
@@ -314,7 +319,7 @@ function startPass(pull){
  if(gameState.phase!=='live'||!pull)return;
  const qb=players[0],v=aimVelocity();if(!v)return;
  const pullDistance=Math.hypot(pull.start.x-pull.end.x,pull.start.y-pull.end.y);
- if(pullDistance<14){$('hint').textContent='PULL BACK FARTHER TO THROW · RELEASE TO PASS.';return;}
+ if(pullDistance<26){$('hint').textContent='STRETCH THE SLING FROM THE QB TO BUILD THROWING POWER.';return;}
  const stats=v.stats,flightFrames=Math.max(22,Math.min(62,Math.round((v.vx>0?(W-qb.x)/v.vx:30)*.72)));
  const scatter=(11-stats.accuracy)*1.8;const landingY=qb.y-12+v.vy*flightFrames+.19*flightFrames*flightFrames;
  const landingX=qb.x+18+v.vx*flightFrames;
@@ -325,9 +330,10 @@ function startPass(pull){
   t+=1;advanceRoutes(.018);
   const seconds=t;ballX=qb.x+18+v.vx*seconds;ballY=qb.y-12+v.vy*seconds+.19*seconds*seconds;
   // Defenders react to the pass, but cannot teleport to the landing spot.
-  defenders.forEach(d=>{let tx=ballX,ty=ballY,dx=tx-d.x,dy=ty-d.y,dist=Math.hypot(dx,dy)||1;d.x+=dx/dist*.85;d.y+=dy/dist*.85;});
+  defenders.forEach((d,i)=>{if(i>=5){let tx=ballX,ty=ballY,dx=tx-d.x,dy=ty-d.y,dist=Math.hypot(dx,dy)||1;d.x+=dx/dist*.34;d.y+=dy/dist*.34;}});
   ball={x:ballX,y:ballY};render();
-  let interceptor=defenders.find(d=>Math.hypot(d.x-ballX,d.y-ballY)<17);
+  // A pick only happens when the ball actually crosses a defender's catch radius.
+  let interceptor=t>3?defenders.find(d=>Math.hypot(d.x-ballX,d.y-ballY)<13):null;
   if(interceptor){gameState.phase='ready';gameState.over=false;gameState.down=1;gameState.spot=Math.max(10,Math.min(90,Math.round(interceptor.x/19.2)));$('hint').textContent='INTERCEPTED! THE DEFENSE PICKED IT OFF.';setupForNext();return;}
   if(t<flightFrames&&ballX<W-20&&ballY<535){raf=requestAnimationFrame(fly);return;}
   const catchDist=Math.hypot(receiver.x-target.x,receiver.y-target.y),coverage=Math.min(...defenders.map(d=>Math.hypot(d.x-receiver.x,d.y-receiver.y)));
