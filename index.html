@@ -172,7 +172,7 @@ function setupPlayers(){
  if(formation===1){players[2].y=290;players[3].y=465;players[4].x=s+25;}
  if(formation===2){players[2].x=s+80;players[3].x=s+80;players[4].y=365;}
  if(formation===3){players[1].x=s-105;players[1].y=390;players[4].x=s+15;}
- players.filter(p=>p.route!==undefined).forEach(p=>p.routeStart={x:p.x,y:p.y});players.forEach(p=>{p.y=Math.max(250,Math.min(505,p.y));});
+ players.filter(p=>p.route!==undefined).forEach(p=>p.routeStart={x:p.x,y:p.y});players.forEach(p=>{p.y=Math.max(258,Math.min(510,p.y));});
  defenders=[
   {x:s+78,y:224,role:'dl'},{x:s+78,y:246,role:'dl'},{x:s+78,y:270,role:'dl'},{x:s+78,y:294,role:'dl'},{x:s+78,y:318,role:'dl'},
   {x:s+155,y:185,role:'lb'},{x:s+165,y:350,role:'lb'},
@@ -181,7 +181,7 @@ function setupPlayers(){
  ball={x:players[0].x+10,y:players[0].y-9};gameState.carrier=null;gameState.phase='ready';gameState.over=false;render();
 }
 function yardToX(yard){return 84+(yard-30)*19.2;}
-function routePoints(p){let base=currentPlay.routes[p.route]||[],origin=p.routeStart||{x:p.x,y:p.y},startY=base[0]?.[1]||0;return base.map(([dx,dy])=>({x:origin.x+dx,y:Math.min(505,Math.max(250,origin.y+(dy-startY)))}));}
+function routePoints(p){let base=currentPlay.routes[p.route]||[],origin=p.routeStart||{x:p.x,y:p.y},startY=base[0]?.[1]||0;return base.map(([dx,dy])=>({x:origin.x+dx,y:Math.min(510,Math.max(258,origin.y+(dy-startY)))}));}
 function advanceRoutes(amount){routeProgress=Math.min(1,routeProgress+amount);players.filter(p=>p.route!==undefined).forEach(p=>{let pts=routePoints(p);let q=moveAlong(pts,routeProgress);p.x=q.x;p.y=q.y;});}
 function drawRoutes(){
  if(!snapStarted&&gameState.phase==='ready'){
@@ -313,7 +313,7 @@ function showModal(title,text,buttons){$('modalTitle').textContent=title;$('moda
 function closeModal(){$('modal').classList.add('hidden');}
 function kickMode(){closeModal();showModal('KICKING','Tap the meter to set power, then tap again to set direction.',[['KICK',()=>{closeModal();gameState.score+=1;gameState.phase='ready';setupForNext();$('hint').textContent='GOOD KICK · 1 POINT.';updateHUD();}],['GO FOR TWO',()=>{closeModal();$('hint').textContent='2-POINT TRY · RUN PLAY OR THROW.';}]]);}
 $('hikeBtn').onclick=()=>{if(gameState.phase!=='ready'||gameState.over)return;hike();};
-canvas.addEventListener('pointerdown',e=>{if(gameState.phase==='running'&&gameState.carrier){drag=point(e);dragStart={...drag};canvas.setPointerCapture(e.pointerId);return;}if(gameState.phase!=='live'||gameState.over)return;let p=point(e),qb=players[0];if(Math.hypot(p.x-qb.x,p.y-qb.y)<125||p.x<qb.x+70){drag=p;dragStart={...p};canvas.setPointerCapture(e.pointerId);render();}});
+canvas.addEventListener('pointerdown',e=>{if(gameState.phase==='running'&&gameState.carrier){drag=point(e);dragStart={...drag};canvas.setPointerCapture(e.pointerId);return;}if(gameState.phase!=='live'||gameState.over)return;let p=point(e),qb=players[0],rb=players[1];if(Math.hypot(p.x-rb.x,p.y-rb.y)<42){gameState.carrier=rb;gameState.phase='running';ball={x:rb.x+12,y:rb.y-7};$('hint').textContent='HANDOFF! RUNNING BACK HAS THE BALL · SWIPE TO DODGE.';runForward(0);return;}if(Math.hypot(p.x-qb.x,p.y-qb.y)<125||p.x<qb.x+70){drag=p;dragStart={...p};canvas.setPointerCapture(e.pointerId);render();}});
 canvas.addEventListener('pointermove',e=>{if(!drag)return;let p=point(e);drag=p;if(gameState.phase==='running'&&gameState.carrier){return;}render();});
 canvas.addEventListener('pointerup',e=>{if(!drag)return;let end=point(e),start=dragStart||drag;drag=null;dragStart=null;if(gameState.phase==='running'&&gameState.carrier){let dx=end.x-start.x,dy=end.y-start.y;if(Math.abs(dy)>Math.abs(dx))runForward(dy>0?4:-4);else if(dx>15){let p=gameState.carrier;runForward(0,true);$('hint').textContent='DIVE FORWARD!';}render();return;}if(gameState.phase!=='live')return;let qb=players[0],dx=end.x-qb.x,dy=end.y-qb.y;if(Math.hypot(dx,dy)<20){$('hint').textContent='PULL BACK FROM THE QB TO AIM YOUR PASS.';return;}let target={x:Math.max(qb.x+45,Math.min(W-40,qb.x+dx*1.8)),y:Math.max(35,Math.min(H-35,qb.y+dy*1.8))};$('hint').textContent='PASS IN THE AIR…';startPass(target);});
 $('game').addEventListener('click',e=>{if(e.target.id==='game')return;});
