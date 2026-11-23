@@ -190,9 +190,9 @@ function drawRoutes(){
 }
 const playerPalette={W:'#ffffff',O:'#2b59c3',B:'#2b59c3',S:'#d49a6a',D:'#8c533e',F:'#c5d1e0',K:'#751c12',G:'#315f20'};
 const standingSprite=[
-"...............","......WWW......",".....WOWWW.....",".....WWSS......",".....WWFS......","...OOOOFF......","..WOOOOOKW.....","..SSSSSSKS.....","...SSSSSKS.....","....OOOOKO.....","....WWWWWW.....","....WWWWWW.....",".....OW.WW.....",".....OW.OO.....",".....OO.OO.....","....GWWWWWWG...","...GGGGGGGGGG..","....GGGGGGGG...","..............."];
+"...............","......WWW......",".....WOWWW.....",".....WWSS......",".....WWFS......","...OOOOFF......","..WOOOOOKW.....","..SSSSSSKS.....","...SSSSSKS.....","....OOOOKO.....","....OOOOOO.....","....OOOOOO.....",".....OW.WW.....",".....OW.OO.....",".....OO.OO.....","....GWWWWWWG...","...GGGGGGGGGG..","....GGGGGGGG...","..............."];
 const runningSprite=[
-"...............","........WWW....",".......WBWWW...",".......WWDD....","......BWWFD....",".....BWWDFF....",".....BDDDDK....",".....BDDDDDK...",".....BDDDDDD...","......WWWW.....","....WWWWFF.....","..WBBDBWFF.....","..WBB.B.DDD....","..W.....BBB....","........WWWW...",".GGGGGGGGGGGG..","...............","...............","..............."];
+"...............","........WWW....",".......WBWWW...",".......WWDD....","......BWWFD....",".....BWWDFF....",".....BDDDDK....",".....BDDDDDK...",".....BDDDDDD...","......OOOO.....","....OOOOFF.....","..WBBDBWFF.....","..WBB.B.DDD....","..W.....BBB....","........WWWW...",".GGGGGGGGGGGG..","...............","...............","..............."];
 function drawPlayer(p,team='blue',dir='right',index=0){
 const grid=(gameState.carrier===p&&gameState.phase==='running')?runningSprite:standingSprite;
 const jersey=team==='blue'?['#17498c','#2b59c3','#2878ad'][index%3]:['#c62828','#d62828','#8f2020'][index%3];
