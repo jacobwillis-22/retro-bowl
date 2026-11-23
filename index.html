@@ -1,128 +1,192 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#1475d1">
-  <title>Retro Bowl — Sunday Football</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Condensed:wght@700;800;900&display=swap');
-    :root{--blue:#1475d1;--navy:#102c4b;--cream:#fff4d7;--gold:#f8c64e;--green:#32864b}
-    *{box-sizing:border-box} body{margin:0;background:#0d2033;color:white;font-family:'Roboto Condensed',Arial,sans-serif;min-height:100vh;display:grid;place-items:center;padding:16px}
-    button{font:inherit;cursor:pointer;border:0}
-    .shell{width:min(100%,960px);min-height:min(740px,94vh);background:var(--blue);border:6px solid #071b2e;box-shadow:0 18px 0 #061523,0 24px 55px #0008;position:relative;overflow:hidden;display:flex;flex-direction:column}
-    .topbar{height:54px;background:#0e4f91;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-weight:900;letter-spacing:2px;border-bottom:4px solid #0a396b}
-    .pixel{font-family:'Press Start 2P',monospace}.screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;text-align:center;position:relative}
-    .sky{position:absolute;inset:0;background:linear-gradient(#4bb1ee 0%,#9ed9ef 52%,#d8e9d5 53%,#d8e9d5 100%);z-index:0}
-    .stadium{position:absolute;left:0;right:0;bottom:190px;height:125px;background:repeating-linear-gradient(90deg,#536477 0 8px,#718196 8px 16px);border-top:12px solid #d6e3ed;opacity:.9}
-    .crowd{position:absolute;left:0;right:0;bottom:190px;height:90px;background:radial-gradient(circle,#f8d66d 2px,transparent 3px),radial-gradient(circle,#e86f63 2px,transparent 3px),radial-gradient(circle,#e8edf0 2px,transparent 3px);background-size:17px 17px,23px 19px,13px 21px;background-position:0 0,7px 8px,12px 2px}
-    .title-wrap{z-index:2;margin-top:-120px;text-shadow:4px 5px 0 #153e68}
-    .title{font-size:clamp(42px,9vw,88px);line-height:.98;font-weight:900;letter-spacing:-3px;color:#fff}.title span{color:#ffe17a}
-    .subtitle{font-size:18px;letter-spacing:5px;margin-top:15px;font-weight:900}
-    .football{font-size:58px;margin:22px 0 10px;filter:drop-shadow(4px 5px 0 #183e5c)}
-    .start{z-index:2;background:#f8c64e;color:#17334d;padding:17px 34px;font-size:22px;font-weight:900;letter-spacing:2px;box-shadow:0 6px 0 #a66b22;margin-top:12px;transition:transform .12s,filter .12s}.start:hover{transform:translateY(-3px);filter:brightness(1.08)}.start:active{transform:translateY(4px);box-shadow:0 2px 0 #a66b22}
-    .field-art{position:absolute;bottom:0;left:0;right:0;height:190px;background:repeating-linear-gradient(0deg,#2f8b4c 0 38px,#277a42 38px 76px);border-top:8px solid #fff}
-    .field-art:before{content:' ';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),#ffffff55 calc(10% - 2px) 10%)}.yard{position:absolute;left:0;right:0;top:50%;border-top:3px solid #ffffff99}
-    .footer{z-index:2;position:absolute;bottom:10px;font-size:11px;letter-spacing:2px;color:#fff;text-shadow:1px 2px #17334d}
-    .panel{z-index:2;width:min(100%,620px);background:#fff4d7;color:#18334c;border:5px solid #17334c;box-shadow:8px 8px 0 #092d50;padding:24px}
-    .panel h2{font-size:clamp(22px,4vw,34px);margin:0 0 16px}.panel p{font-size:18px;line-height:1.35;margin:8px 0 18px}
-    .menu-buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px}.menu-buttons button,.action{background:#1475d1;color:#fff;padding:14px 10px;font-size:18px;font-weight:900;border:3px solid #103a60;box-shadow:0 4px 0 #103a60}.menu-buttons button:hover,.action:hover{filter:brightness(1.13)}
-    .muted{opacity:.72;font-size:13px!important}
-    .game-screen{padding:0;justify-content:flex-start;background:#163e5b}.hud{width:100%;display:flex;justify-content:space-between;gap:8px;padding:12px 16px;background:#102c4b;font-weight:900;font-size:17px;z-index:2}.hud span{white-space:nowrap}
-    canvas{width:100%;height:auto;display:block;touch-action:none;image-rendering:pixelated;background:#32864b}
-    .game-help{background:#fff4d7;color:#18334c;padding:12px 16px;font-size:15px;font-weight:800;width:100%;text-align:center}
-    .game-actions{display:flex;gap:10px;padding:10px;justify-content:center;background:#102c4b;width:100%}
-    .game-actions button{padding:10px 18px;background:#f8c64e;color:#17334d;font-weight:900}
-    .hidden{display:none!important}
-    @media(max-width:560px){body{padding:0}.shell{min-height:100vh;border-width:0}.topbar{height:46px}.screen{padding:18px 12px}.panel{padding:18px}.menu-buttons{grid-template-columns:1fr}.hud{font-size:13px;padding:10px 8px}.game-help{font-size:13px}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0877c9">
+<title>Sunday Football</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Condensed:wght@700;800;900&display=swap');
+:root{--blue:#0879ca;--navy:#102d4b;--ink:#10263b;--gold:#ffd45c;--cream:#fff4d8;--green:#32894c;--red:#d34d48}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07192a;color:white;font-family:'Roboto Condensed',Arial,sans-serif;touch-action:manipulation}
+button{font:inherit;border:0;cursor:pointer;touch-action:manipulation}
+#app{width:100%;height:100dvh;min-height:100%;display:flex;flex-direction:column;background:var(--blue);overflow:hidden;position:relative}
+.topbar{height:clamp(40px,7vh,58px);flex:none;background:#07518f;border-bottom:4px solid #063b6c;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(12px,3vw,28px);font-weight:900;letter-spacing:1.5px;z-index:3}
+.brand{font-family:'Press Start 2P',monospace;font-size:clamp(9px,1.5vw,13px)}
+.top-right{display:flex;gap:8px;align-items:center;font-size:13px}
+.icon-btn{background:#123b60;color:white;border:2px solid #a9d9f2;padding:7px 10px;font-weight:900}
+.screen{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:auto;padding:clamp(10px,2.5vw,24px)}
+.hidden{display:none!important}
+.pixel{font-family:'Press Start 2P',monospace}
+.title-screen{background:linear-gradient(#168bd5 0%,#77c8ee 53%,#d7e8d8 54%,#d7e8d8 100%);flex-direction:column;text-align:center}
+.title-screen:before{content:"";position:absolute;inset:45% 0 18%;background:repeating-linear-gradient(90deg,#50677b 0 8px,#8293a1 8px 16px);border-top:10px solid #e9f2e8}
+.title-screen:after{content:"";position:absolute;left:0;right:0;bottom:0;height:19%;background:repeating-linear-gradient(90deg,transparent 0 9.8%,#ffffff80 9.8% 10%),repeating-linear-gradient(0deg,#287a42 0 35px,#328d4b 35px 70px);border-top:5px solid white}
+.title-logo{position:relative;z-index:1;font-weight:900;font-size:clamp(48px,11vw,104px);line-height:.83;letter-spacing:-4px;text-shadow:5px 6px 0 #153d65;margin-top:-3vh}
+.title-logo span{color:#ffdf72}
+.tagline{position:relative;z-index:1;font-weight:900;letter-spacing:4px;font-size:clamp(12px,2vw,19px);margin-top:18px;text-shadow:2px 2px #17476b}
+.ball-icon{position:relative;z-index:1;font-size:clamp(35px,7vw,62px);margin:10px}
+.primary{position:relative;z-index:2;background:var(--gold);color:#16344e;padding:15px 28px;font-size:clamp(16px,2.7vw,22px);font-weight:900;letter-spacing:1px;border:3px solid #173b5b;box-shadow:0 5px 0 #9b6727}
+.primary:active,.tile:active,.action:active{transform:translateY(3px);box-shadow:0 2px 0 #173b5b}
+.save-row{position:relative;z-index:2;display:flex;gap:8px;margin:12px 0}
+.save{background:#103d68;color:white;border:2px solid white;padding:9px 12px;font-weight:900;font-size:12px}
+.panel{width:min(760px,100%);background:var(--cream);color:var(--ink);border:4px solid #173b5b;box-shadow:7px 7px 0 #062d50;padding:clamp(14px,3vw,24px);text-align:center}
+.panel h1,.panel h2{font-family:'Press Start 2P',monospace;font-size:clamp(15px,2.7vw,24px);line-height:1.5;margin:0 0 14px}
+.panel p{font-size:clamp(15px,2vw,19px);line-height:1.35;margin:8px 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile,.action{background:#1179c6;color:white;border:3px solid #153c5e;box-shadow:0 4px 0 #153c5e;padding:13px 8px;font-weight:900;font-size:clamp(14px,2vw,18px)}
+.tile small{display:block;font-size:11px;opacity:.85;margin-top:5px}
+.subline{font-size:12px!important;opacity:.72}
+.hub{align-items:stretch;background:#dce8dc}
+.hub-panel{width:min(900px,100%);margin:auto}
+.hub-head{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#123c60;color:white;padding:12px;margin:-14px -14px 14px;text-align:left}
+.helmet{font-size:28px}
+.hub-stats{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.stat{background:#173e5d;color:white;padding:8px 12px;font-weight:900}
+.hub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.hub-grid .tile{min-height:70px}
+.player-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;text-align:left}
+.player-card{background:#e4e8dc;border:2px solid #9aa9a6;padding:10px;color:#18334c;font-weight:900}
+.player-card b{float:right;color:#b17a18}
+.player-card small{display:block;margin-top:4px;font-weight:700;opacity:.7}
+.back{margin-top:12px;background:#173e5d;color:white;padding:11px 20px;font-weight:900;border:2px solid #0b2944}
+.game-screen{padding:0;background:#102d4b;display:flex;flex-direction:column;justify-content:flex-start;gap:0;overflow:hidden}
+.hud{height:clamp(42px,8vh,62px);width:100%;flex:none;background:#102d4b;display:flex;justify-content:space-around;align-items:center;gap:5px;padding:4px 7px;border-bottom:2px solid #315777;font-weight:900}
+.hud-block{text-align:center;white-space:nowrap;font-size:clamp(12px,2.3vw,18px)}
+.hud-block small{display:block;font-size:9px;letter-spacing:1px;color:#c2d8e9}
+.field-wrap{width:100%;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:#173d5a;overflow:hidden}
+#field{display:block;width:100%;height:100%;max-height:100%;object-fit:contain;image-rendering:pixelated;touch-action:none}
+.play-controls{width:100%;flex:none;background:#102d4b;border-top:2px solid #315777;padding:7px max(8px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-between;gap:8px}
+.control-btn{background:#f5c84f;color:#18344e;border:2px solid #ffe79a;box-shadow:0 3px 0 #98651e;padding:10px 13px;font-weight:900;font-size:clamp(12px,2vw,16px);min-height:42px}
+.control-btn.secondary{background:#dce9f1;color:#16334c;border-color:white;box-shadow:0 3px 0 #73899a}
+.control-btn:disabled{opacity:.4}
+#hint{flex:1;text-align:center;color:white;font-weight:800;font-size:clamp(11px,1.8vw,15px);line-height:1.2}
+.modal{position:absolute;inset:0;background:#06182bd9;z-index:10;display:flex;align-items:center;justify-content:center;padding:18px}
+.modal .panel{max-width:470px}
+.modal-buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.kick-meter{height:150px;background:#173e5d;border:3px solid white;position:relative;margin:15px auto;width:90px}
+.kick-fill{position:absolute;bottom:0;left:0;right:0;background:#54c66b;height:45%}
+.kick-needle{position:absolute;left:-5px;right:-5px;height:5px;background:#ffdf62;top:35%}
+@media (orientation:portrait) and (max-width:700px){
+ .topbar{height:40px}
+ .screen{padding:9px}
+ .game-screen{gap:0}
+ .hud{height:43px}
+ .field-wrap{flex:0 0 auto;height:auto;aspect-ratio:16/9;max-height:44vh}
+ #field{width:100%;height:100%}
+ .play-controls{min-height:62px}
+ .control-btn{padding:9px 10px;min-height:40px}
+ .hub-grid{grid-template-columns:repeat(2,1fr)}
+ .player-list{grid-template-columns:1fr}
+}
+@media (orientation:landscape) and (max-height:520px){
+ .topbar{height:34px}.screen{padding:8px}.hud{height:38px}
+ .play-controls{padding-top:4px;padding-bottom:4px}
+ .control-btn{min-height:34px;padding:6px 10px}
+}
+</style>
 </head>
 <body>
-  <main class="shell">
-    <header class="topbar"><span class="pixel" style="font-size:12px">SUNDAY</span><span>FOOTBALL LEAGUE</span><span class="pixel" style="font-size:10px">'26</span></header>
-    <section id="titleScreen" class="screen">
-      <div class="sky"></div><div class="stadium"></div><div class="crowd"></div>
-      <div class="title-wrap"><div class="title">RETRO<br><span>BOWL</span></div><div class="subtitle">SUNDAY FOOTBALL</div><div class="football">🏈</div></div>
-      <button class="start" id="startBtn">TAP TO PLAY</button>
-      <div class="field-art"><div class="yard"></div></div>
-      <div class="footer">A LITTLE PIXEL FOOTBALL • BIG-TIME DREAMS</div>
-    </section>
-    <section id="menuScreen" class="screen hidden">
-      <div class="panel">
-        <h2 class="pixel">WELCOME, COACH</h2>
-        <p>Your season starts now. Build a team, call the play, and lead your squad to the championship.</p>
-        <div class="menu-buttons"><button id="playBtn">▶ PLAY GAME</button><button id="rosterBtn">TEAM ROSTER</button><button id="seasonBtn">SEASON INFO</button><button id="backBtn">TITLE SCREEN</button></div>
-        <p class="muted" id="menuNote">Exhibition game · 1st quarter · 3:00</p>
-      </div>
-    </section>
-    <section id="rosterScreen" class="screen hidden">
-      <div class="panel"><h2 class="pixel">YOUR ROSTER</h2><p>QB — J. Carter ★★★★☆<br>WR — M. Jackson ★★★★☆<br>WR — T. Brooks ★★★☆☆<br>RB — D. Harris ★★★★☆<br>TE — A. Miller ★★★☆☆</p><button class="action" id="rosterBack">BACK TO MENU</button></div>
-    </section>
-    <section id="seasonScreen" class="screen hidden">
-      <div class="panel"><h2 class="pixel">SEASON ONE</h2><p>Record: 0–0<br>Next opponent: Chicago<br>Goal: Win your division and reach the Retro Bowl.</p><button class="action" id="seasonBack">BACK TO MENU</button></div>
-    </section>
-    <section id="gameScreen" class="screen game-screen hidden">
-      <div class="hud"><span id="scoreText">HOME 0 — 0 AWAY</span><span id="downText">1ST & 10</span><span id="clockText">3:00</span></div>
-      <canvas id="field" width="900" height="500" aria-label="Football field gameplay"></canvas>
-      <div class="game-help" id="gameHelp">DRAG BACK FROM THE QUARTERBACK, AIM, THEN RELEASE TO THROW.</div>
-      <div class="game-actions"><button id="menuGameBtn">QUIT PLAY</button><button id="resetPlayBtn">NEW PLAY</button></div>
-    </section>
-  </main>
+<div id="app">
+<header class="topbar"><span class="brand">SUNDAY FOOTBALL</span><span class="top-right"><span id="seasonLabel">SEASON 1</span><button class="icon-btn" id="soundBtn" aria-label="Toggle sound">♫ ON</button></span></header>
+<section id="title" class="screen title-screen">
+ <div class="title-logo">RETRO<br><span>BOWL</span></div><div class="tagline">YOUR TEAM. YOUR LEGACY.</div><div class="ball-icon">🏈</div>
+ <div class="save-row"><button class="save" id="save1">SAVE 1 · NEW GAME</button></div>
+ <button class="primary" id="start">TAP TO PLAY</button>
+</section>
+<section id="hub" class="screen hub hidden">
+ <div class="panel hub-panel">
+  <div class="hub-head"><div><div class="pixel" style="font-size:12px">COACH'S OFFICE</div><strong id="teamName">CHICAGO BEARS</strong><div id="record">0–0 · WEEK 1</div></div><div class="helmet">🏈</div></div>
+  <div class="hub-stats"><span class="stat">OFF <b>★★★☆☆</b></span><span class="stat">DEF <b>★★☆☆☆</b></span><span class="stat">CC <b id="credits">10</b></span></div>
+  <div class="hub-grid">
+   <button class="tile" id="play">▶ PLAY NEXT GAME<small>Start your next matchup</small></button>
+   <button class="tile" id="roster">♟ ROSTER<small>View your players</small></button>
+   <button class="tile" id="front">🏟 FRONT OFFICE<small>Facilities & coaches</small></button>
+   <button class="tile" id="season">▤ SEASON<small>Schedule & standings</small></button>
+   <button class="tile" id="options">⚙ OPTIONS<small>Game settings</small></button>
+   <button class="tile" id="coach">🏆 COACH PROFILE<small>Career record</small></button>
+  </div>
+ </div>
+</section>
+<section id="rosterScreen" class="screen hidden"><div class="panel"><h2>YOUR ROSTER</h2><div class="player-list" id="players"></div><button class="back" data-home>← BACK</button></div></section>
+<section id="frontScreen" class="screen hidden"><div class="panel"><h2>FRONT OFFICE</h2><p>Build your club between games.</p><div class="grid"><button class="tile" id="stadium">🏟 STADIUM<small>Level 1 · Upgrade 2 CC</small></button><button class="tile" id="training">🏋 TRAINING<small>Level 1 · Upgrade 2 CC</small></button><button class="tile" id="rehab">＋ REHAB<small>Level 1 · Upgrade 2 CC</small></button><button class="tile" id="staff">COACHING STAFF<small>Offense & defense</small></button></div><p id="frontNote" class="subline">Spend coaching credits carefully.</p><button class="back" data-home>← BACK</button></div></section>
+<section id="seasonScreen" class="screen hidden"><div class="panel"><h2>SEASON 1</h2><p id="seasonInfo">WEEK 1 · REGULAR SEASON<br>Record: 0–0<br>Next: Green Bay</p><div class="grid"><button class="tile" id="schedule">▤ SCHEDULE<small>Weekly matchups</small></button><button class="tile" id="standings">🏆 STANDINGS<small>League table</small></button></div><p id="seasonNote" class="subline">Win games to reach the playoffs.</p><button class="back" data-home>← BACK</button></div></section>
+<section id="optionsScreen" class="screen hidden"><div class="panel"><h2>GAME OPTIONS</h2><p>Quarter length: <button class="action" id="quarter">2 MIN</button></p><p>Difficulty: <button class="action" id="difficulty">MEDIUM</button></p><p>Sound: <button class="action" id="soundOption">ON</button></p><button class="back" data-home>← BACK</button></div></section>
+<section id="coachScreen" class="screen hidden"><div class="panel"><h2>COACH PROFILE</h2><p>CAREER WINS: <b id="wins">0</b><br>CAREER LOSSES: 0<br>CHAMPIONSHIPS: 0</p><button class="back" data-home>← BACK</button></div></section>
+<section id="pregame" class="screen hidden"><div class="panel"><h2>WEEK <span id="weekNum">1</span> MATCHUP</h2><p>🏈 <b>CHICAGO</b> vs <b>GREEN BAY</b><br>OFF ★★★☆☆ &nbsp; DEF ★★☆☆☆</p><p class="subline">Choose your uniform, then take the field.</p><div class="grid"><button class="tile" id="uniform">HOME UNIFORM</button><button class="tile" id="kickoff">KICKOFF ▶</button></div><button class="back" id="pregameBack">← BACK TO HUB</button></div></section>
+<section id="game" class="screen game-screen hidden">
+ <div class="hud"><div class="hud-block"><small>HOME</small><span id="score">0</span></div><div class="hud-block"><small>QUARTER · CLOCK</small><span id="clock">1ST · 2:00</span></div><div class="hud-block"><small>DOWN · DISTANCE</small><span id="down">1ST & 10</span></div><div class="hud-block"><small>BALL</small><span id="ballSpot">20 YD</span></div></div>
+ <div class="field-wrap"><canvas id="field" width="960" height="540"></canvas></div>
+ <div class="play-controls"><button class="control-btn secondary" id="timeout">TIMEOUT</button><div id="hint">Drag backward from your QB, aim downfield, then release to pass.</div><button class="control-btn" id="run">RUN PLAY</button><button class="control-btn secondary" id="audible">AUDIBLE</button></div>
+</section>
+<div id="modal" class="modal hidden"><div class="panel"><h2 id="modalTitle">PAUSE</h2><p id="modalText">Game paused.</p><div class="modal-buttons" id="modalButtons"></div></div></div>
+</div>
 <script>
-(() => {
-  const $ = id => document.getElementById(id);
-  const screens = ['titleScreen','menuScreen','rosterScreen','seasonScreen','gameScreen'];
-  function show(id){screens.forEach(s => $(s).classList.toggle('hidden',s!==id));}
-  $('startBtn').onclick=()=>show('menuScreen');
-  $('backBtn').onclick=()=>show('titleScreen');
-  $('rosterBtn').onclick=()=>show('rosterScreen');
-  $('seasonBtn').onclick=()=>show('seasonScreen');
-  $('rosterBack').onclick=$('seasonBack').onclick=()=>show('menuScreen');
-  $('playBtn').onclick=()=>{show('gameScreen');startPlay();};
-  $('menuGameBtn').onclick=()=>show('menuScreen');
-  $('resetPlayBtn').onclick=()=>startPlay();
-
-  const canvas=$('field'),ctx=canvas.getContext('2d');
-  let ball,players,defenders,drag=null,anim=null,score=0,down=1,spot=120,playOver=false;
-  const W=900,H=500;
-  function drawPlayer(x,y,color,number){ctx.fillStyle='#152c40';ctx.fillRect(x-13,y+17,26,7);ctx.fillStyle=color;ctx.fillRect(x-12,y-5,24,25);ctx.fillStyle='#f2c69a';ctx.fillRect(x-9,y-18,18,14);ctx.fillStyle='#fff';ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.fillText(number,x,y+10);}
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    for(let y=0;y<H;y+=80){ctx.fillStyle=(y/80)%2?'#32864b':'#388f51';ctx.fillRect(0,y,W,80);}
-    ctx.strokeStyle='#ffffffbb';ctx.lineWidth=3;
-    for(let x=0;x<=W;x+=90){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();ctx.fillStyle='#fff';ctx.font='18px Arial';ctx.fillText(String(Math.round((x-spot)/9)),x+5,25);}
-    ctx.fillStyle='#fff';ctx.fillRect(0,0,7,H);ctx.fillRect(W-7,0,7,H);
-    ctx.fillStyle='#ffffff22';ctx.fillRect(0,0,spot,H);
-    players.forEach((p,i)=>drawPlayer(p.x,p.y,i===0?'#e8b84c':'#e8e8e8',p.n));
-    defenders.forEach((p,i)=>drawPlayer(p.x,p.y,'#c94e48',i+1));
-    if(ball){ctx.fillStyle='#6b351d';ctx.beginPath();ctx.ellipse(ball.x,ball.y,10,6,-.3,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.stroke();}
-    if(drag){ctx.strokeStyle='#fff';ctx.lineWidth=4;ctx.setLineDash([9,8]);ctx.beginPath();ctx.moveTo(players[0].x,players[0].y-15);ctx.lineTo(drag.x,drag.y);ctx.stroke();ctx.setLineDash([]);}
-    if(playOver){ctx.fillStyle='#102c4bee';ctx.fillRect(245,190,410,105);ctx.fillStyle='#fff';ctx.font='bold 34px Arial';ctx.textAlign='center';ctx.fillText('PLAY COMPLETE',450,235);ctx.font='20px Arial';ctx.fillText('Tap NEW PLAY to line up again',450,270);}
-  }
-  function updateHud(){ $('scoreText').textContent='HOME '+score+' — 0 AWAY';$('downText').textContent=down===4?'4TH & 10':down+'ST & 10';$('clockText').textContent='3:00';}
-  function startPlay(){
-    cancelAnimationFrame(anim);playOver=false;drag=null;
-    players=[{x:spot,y:250,n:'QB'},{x:spot+145,y:115,n:'1'},{x:spot+175,y:380,n:'2'},{x:spot+95,y:175,n:'3'}];
-    defenders=[{x:spot+280,y:175},{x:spot+335,y:305},{x:spot+420,y:245},{x:spot+490,y:115}];
-    ball={x:players[0].x+18,y:players[0].y-10};updateHud();$('gameHelp').textContent='DRAG BACK FROM THE QUARTERBACK, AIM, THEN RELEASE TO THROW.';draw();
-  }
-  function pos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height};}
-  canvas.addEventListener('pointerdown',e=>{if(playOver)return;drag=pos(e);canvas.setPointerCapture(e.pointerId);draw();});
-  canvas.addEventListener('pointermove',e=>{if(drag){drag=pos(e);draw();}});
-  canvas.addEventListener('pointerup',e=>{
-    if(!drag||playOver)return;const end=pos(e),qb=players[0],dx=qb.x-end.x,dy=qb.y-end.y;drag=null;
-    if(Math.hypot(dx,dy)<22){$('gameHelp').textContent='PULL BACK A LITTLE FARTHER TO THROW.';draw();return;}
-    const target={x:Math.max(80,Math.min(850,qb.x+dx*1.7)),y:Math.max(35,Math.min(465,qb.y+dy*1.7))};
-    ball={x:qb.x+15,y:qb.y-10};let t=0;playOver=true;
-    function fly(){t+=.045;ball.x=qb.x+15+(target.x-qb.x-15)*t;ball.y=qb.y-10+(target.y-qb.y+10)*t+Math.sin(t*Math.PI)*-35;draw();
-      if(t<1){anim=requestAnimationFrame(fly);return;}
-      const nearest=players.slice(1).sort((a,b)=>Math.hypot(a.x-target.x,a.y-target.y)-Math.hypot(b.x-target.x,b.y-target.y))[0];
-      const catchDist=Math.hypot(nearest.x-target.x,nearest.y-target.y),defDist=Math.min(...defenders.map(d=>Math.hypot(d.x-target.x,d.y-target.y)));
-      if(catchDist<105&&catchDist<defDist+35){const yards=Math.max(2,Math.round((target.x-spot)/9));spot=Math.min(790,spot+yards*9);$('gameHelp').textContent=target.x>790?'TOUCHDOWN! NICE THROW!':'COMPLETE! '+yards+' YARDS. LINE UP FOR THE NEXT PLAY.';if(target.x>790){score+=7;spot=120;}}
-      else{$('gameHelp').textContent='INCOMPLETE PASS. TRY A DIFFERENT ANGLE.';down++;if(down>4){down=1;spot=120;$('gameHelp').textContent='TURNOVER ON DOWNS. YOUR BALL AGAIN FOR THIS DEMO.';}}
-      updateHud();draw();
-    }fly();
-  });
+(()=>{
+const $=id=>document.getElementById(id), screens=['title','hub','rosterScreen','frontScreen','seasonScreen','optionsScreen','coachScreen','pregame','game'];
+function show(id){screens.forEach(s=>$(s).classList.toggle('hidden',s!==id));}
+let week=1,wins=0,losses=0,credits=10,quarterLength=2,difficulty=1,sound=true,uniform=0,upgrades={stadium:1,training:1,rehab:1};
+let roster=[['QB','J. Carter',4],['WR','M. Jackson',4],['WR','T. Brooks',3],['RB','D. Harris',4],['TE','A. Miller',3],['DL','R. Wilson',3],['LB','C. Green',2],['DB','S. Brown',3],['K','A. Price',3]];
+$('start').onclick=()=>show('hub');$('save1').onclick=()=>show('hub');
+$('roster').onclick=()=>{renderRoster();show('rosterScreen')};$('front').onclick=()=>show('frontScreen');$('season').onclick=()=>show('seasonScreen');$('options').onclick=()=>show('optionsScreen');$('coach').onclick=()=>show('coachScreen');
+document.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>show('hub'));
+$('play').onclick=()=>{ $('weekNum').textContent=week;show('pregame')};$('pregameBack').onclick=()=>show('hub');
+$('uniform').onclick=()=>{uniform=(uniform+1)%3;$('uniform').textContent=['HOME UNIFORM','AWAY UNIFORM','ALTERNATE'][uniform]};
+$('kickoff').onclick=()=>{show('game');newDrive();};
+function renderRoster(){$('players').innerHTML=roster.map(p=>'<div class="player-card">'+p[0]+' · '+p[1]+' <b>'+'★'.repeat(p[2])+'☆'.repeat(5-p[2])+'</b><small>CONDITION · '+(90-Math.floor(Math.random()*8))+'%</small></div>').join('');}
+function updateHub(){$('credits').textContent=credits;$('record').textContent=wins+'–'+losses+' · WEEK '+week;$('seasonLabel').textContent='SEASON 1';$('wins').textContent=wins;$('seasonInfo').innerHTML='WEEK '+week+' · REGULAR SEASON<br>Record: '+wins+'–'+losses+'<br>Next: '+['Green Bay','Detroit','Minnesota','New York'][week%4];}
+['stadium','training','rehab'].forEach(k=>$(k).onclick=()=>{if(credits<2){$('frontNote').textContent='Not enough coaching credits.';return;}credits-=2;upgrades[k]++;$('frontNote').textContent=k.toUpperCase()+' upgraded to level '+upgrades[k]+'!';updateHub();});
+$('staff').onclick=()=>{$('frontNote').textContent='Your coordinators are helping develop the team. Staff upgrades will unlock in a future build.'};
+$('schedule').onclick=()=>{$('seasonNote').textContent='WEEK '+week+': '+(wins?'W':'—')+' · Upcoming games appear here as you progress.'};
+$('standings').onclick=()=>{$('seasonNote').textContent='DIVISION STANDINGS · Your team '+wins+'–'+losses+'. Keep winning to earn a playoff spot.'};
+$('quarter').onclick=()=>{quarterLength=quarterLength%3+1;$('quarter').textContent=quarterLength+' MIN';};
+$('difficulty').onclick=()=>{difficulty=difficulty%3+1;$('difficulty').textContent=['EASY','MEDIUM','HARD'][difficulty-1];};
+$('soundBtn').onclick=$('soundOption').onclick=()=>{sound=!sound;$('soundBtn').textContent=sound?'♫ ON':'♫ OFF';$('soundOption').textContent=sound?'ON':'OFF';};
+$('timeout').onclick=()=>{if(gameState.over)return;gameState.timeouts=Math.max(0,gameState.timeouts-1);$('hint').textContent=gameState.timeouts+' TIMEOUTS LEFT THIS HALF.'};
+$('audible').onclick=()=>{if(gameState.over)return;formation=(formation+1)%3;setupPlayers();$('hint').textContent='NEW PLAY CALLED · CHECK YOUR RECEIVER ROUTES.';render();};
+const canvas=$('field'),ctx=canvas.getContext('2d'),W=960,H=540;
+let gameState={},players=[],defenders=[],ball=null,drag=null,raf=0,formation=0;
+function newDrive(){gameState={score:0,quarter:1,clock:quarterLength*60,down:1,toGo:10,spot:20,timeouts:2,over:false,carrier:null,phase:'ready',plays:0};formation=0;setupPlayers();updateHUD();$('hint').textContent='DRAG BACK FROM YOUR QB, AIM INTO OPEN SPACE, RELEASE TO THROW.';render();}
+function setupPlayers(){let s=gameState.spot*8.8+38;players=[{x:s,y:270,n:'QB',role:'qb'},{x:s+135,y:105,n:'1',role:'wr'},{x:s+160,y:430,n:'2',role:'wr'},{x:s+90,y:180,n:'3',role:'te'},{x:s+60,y:360,n:'RB',role:'rb'}];if(formation===1){players[1].y=190;players[2].y=350;}if(formation===2){players[1].x+=70;players[2].x+=50;players[3].x+=30;}defenders=[{x:s+230,y:155},{x:s+280,y:365},{x:s+380,y:255},{x:s+450,y:95},{x:s+500,y:435}];ball={x:players[0].x+15,y:players[0].y-10};gameState.carrier=null;gameState.phase='ready';gameState.over=false;render();}
+function drawPlayer(p,color){ctx.fillStyle='#142c40';ctx.fillRect(p.x-14,p.y+16,28,8);ctx.fillStyle=color;ctx.fillRect(p.x-14,p.y-8,28,27);ctx.fillStyle='#f2c79d';ctx.fillRect(p.x-10,p.y-24,20,16);ctx.fillStyle='#fff';ctx.font='bold 13px Arial';ctx.textAlign='center';ctx.fillText(p.n,p.x,p.y+9);}
+function render(){
+ctx.clearRect(0,0,W,H);
+for(let x=0;x<W;x+=88){ctx.fillStyle=(x/88)%2?'#32854a':'#388f51';ctx.fillRect(x,0,88,H);}
+ctx.fillStyle='#1f7540';ctx.fillRect(0,0,36,H);ctx.fillRect(W-36,0,36,H);
+ctx.strokeStyle='#ffffffc9';ctx.lineWidth=3;
+for(let x=36;x<W-25;x+=88){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();ctx.fillStyle='white';ctx.font='bold 18px Arial';ctx.textAlign='center';let yard=Math.round((x-(gameState.spot*8.8+38))/8.8+gameState.spot);if(yard>=0&&yard<=100)ctx.fillText(String(yard),x,28);ctx.fillRect(x,85,4,12);ctx.fillRect(x,H-97,4,12);}
+let los=gameState.spot*8.8+38;ctx.fillStyle='#2f8ff0';ctx.fillRect(los,0,4,H);ctx.fillStyle='#ffda48';ctx.fillRect(Math.min(W-38,los+gameState.toGo*8.8),0,4,H);
+ctx.fillStyle='#f7d65c';ctx.font='bold 20px Arial';ctx.textAlign='center';ctx.fillText('SUNDAY',W/2,70);
+players.forEach((p,i)=>drawPlayer(p,i===0?'#f3bd45':uniform===1?'#e8e8e8':'#e7e9ed'));defenders.forEach(p=>drawPlayer(p,'#c94d49'));
+if(ball){ctx.fillStyle='#71391e';ctx.beginPath();ctx.ellipse(ball.x,ball.y,13,8,-.35,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
+if(drag){ctx.strokeStyle='#fff';ctx.lineWidth=4;ctx.setLineDash([10,9]);ctx.beginPath();ctx.moveTo(players[0].x,players[0].y-18);ctx.lineTo(drag.x,drag.y);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(drag.x,drag.y,7,0,Math.PI*2);ctx.fill();}
+if(gameState.phase==='running'&&gameState.carrier){ctx.strokeStyle='#ffed8a';ctx.lineWidth=4;ctx.beginPath();ctx.arc(gameState.carrier.x,gameState.carrier.y,24,0,Math.PI*2);ctx.stroke();}
+}
+function updateHUD(){$('score').textContent=gameState.score;$('clock').textContent=gameState.quarter+'Q · '+Math.max(0,Math.floor(gameState.clock/60))+':'+String(Math.max(0,gameState.clock%60)).padStart(2,'0');$('down').textContent=gameState.down+' & '+(gameState.toGo>=90?'GOAL':gameState.toGo);$('ballSpot').textContent=gameState.spot+' YD';$('run').textContent=gameState.phase==='running'?'RUNNING…':'RUN PLAY';}
+function point(e){let r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height};}
+function nearest(arr,p){return arr.reduce((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)<Math.hypot(b.x-p.x,b.y-p.y)?a:b);}
+function startPass(target){let qb=players[0],t=0;gameState.phase='passing';gameState.over=true;ball={x:qb.x+15,y:qb.y-12};cancelAnimationFrame(raf);
+function fly(){t+=.035;ball.x=qb.x+15+(target.x-qb.x-15)*t;ball.y=qb.y-12+(target.y-qb.y+12)*t-Math.sin(t*Math.PI)*55;render();if(t<1){raf=requestAnimationFrame(fly);return;}
+let receiver=nearest(players.slice(1,4),target),coverage=Math.min(...defenders.map(d=>Math.hypot(d.x-target.x,d.y-target.y))),catchDist=Math.hypot(receiver.x-target.x,receiver.y-target.y);
+if(catchDist<125&&coverage>catchDist*.65){gameState.carrier=receiver;receiver.x=target.x;receiver.y=target.y;ball={x:receiver.x+12,y:receiver.y-7};gameState.phase='running';gameState.over=false;$('hint').textContent='CATCH! SWIPE UP OR DOWN TO JUKE. SWIPE TOWARD THE END ZONE TO DIVE.';runForward(0);}
+else{gameState.down++;gameState.phase='ready';gameState.over=false;$('hint').textContent='INCOMPLETE PASS · '+(gameState.down>4?'TURNOVER ON DOWNS':'TRY AGAIN');if(gameState.down>4){gameState.down=1;gameState.spot=Math.max(10,gameState.spot-15);}updateHUD();setupForNext();}}
+fly();}
+function setupForNext(){setupPlayers();updateHUD();}
+function runForward(juke=0,dive=false){let p=gameState.carrier;if(!p||gameState.phase!=='running')return;let frames=0;function step(){if(gameState.phase!=='running')return;frames++;p.x+=dive?10:3.2;p.y+=juke; juke*=.88;defenders.forEach(d=>{let dx=p.x-d.x,dy=p.y-d.y;d.x+=Math.sign(dx)*Math.min(1.9,Math.abs(dx)*.018);d.y+=Math.sign(dy)*Math.min(1.7,Math.abs(dy)*.02);});ball={x:p.x+12,y:p.y-7};let tackled=defenders.some(d=>Math.hypot(d.x-p.x,d.y-p.y)<24);if(p.x>W-55){gameState.score+=6;gameState.phase='ready';gameState.down=1;gameState.spot=20;updateHUD();render();showModal('TOUCHDOWN!','Six points! Choose your extra point.',[['EXTRA POINT',()=>kickMode()],['2-POINT TRY',()=>{closeModal();gameState.score+=0;gameState.down=1;setupForNext();$('hint').textContent='2-POINT TRY · RUN OR PASS FROM THE GOAL LINE.';}]]);return;}
+if(tackled||frames>95){let yards=Math.max(1,Math.round((p.x-(gameState.spot*8.8+38))/8.8));gameState.spot=Math.min(95,gameState.spot+yards);gameState.toGo=Math.max(1,gameState.toGo-yards);if(gameState.toGo<=0){gameState.down=1;gameState.toGo=10;$('hint').textContent='FIRST DOWN!';}else{gameState.down++;$('hint').textContent='TACKLED · '+yards+' YARDS GAINED.';}if(gameState.down>4){gameState.down=1;gameState.toGo=10;gameState.spot=Math.max(10,gameState.spot-10);$('hint').textContent='TURNOVER ON DOWNS.';}gameState.phase='ready';gameState.carrier=null;setupForNext();return;}
+render();raf=requestAnimationFrame(step);}cancelAnimationFrame(raf);raf=requestAnimationFrame(step);}
+function showModal(title,text,buttons){$('modalTitle').textContent=title;$('modalText').textContent=text;let wrap=$('modalButtons');wrap.innerHTML='';buttons.forEach(([label,fn])=>{let b=document.createElement('button');b.className='tile';b.textContent=label;b.onclick=fn;wrap.appendChild(b);});$('modal').classList.remove('hidden');}
+function closeModal(){$('modal').classList.add('hidden');}
+function kickMode(){closeModal();showModal('KICKING','Tap the meter to set power, then tap again to set direction.',[['KICK',()=>{closeModal();gameState.score+=1;gameState.phase='ready';setupForNext();$('hint').textContent='GOOD KICK · 1 POINT.';updateHUD();}],['GO FOR TWO',()=>{closeModal();$('hint').textContent='2-POINT TRY · RUN PLAY OR THROW.';}]]);}
+$('run').onclick=()=>{if(gameState.phase!=='ready'||gameState.over)return;let rb=players[4];gameState.carrier=rb;gameState.phase='running';ball={x:rb.x+12,y:rb.y-8};$('hint').textContent='RUNNING BACK HAS IT · SWIPE UP OR DOWN TO DODGE.';runForward(0);};
+canvas.addEventListener('pointerdown',e=>{if(gameState.phase==='running'&&gameState.carrier){drag=point(e);canvas.setPointerCapture(e.pointerId);return;}if(gameState.phase!=='ready'||gameState.over)return;let p=point(e),qb=players[0];if(Math.hypot(p.x-qb.x,p.y-qb.y)<110||p.x<qb.x+70){drag=p;canvas.setPointerCapture(e.pointerId);render();}});
+canvas.addEventListener('pointermove',e=>{if(!drag)return;let p=point(e);if(gameState.phase==='running'&&gameState.carrier){let dy=p.y-drag.y;drag=p;runForward(Math.max(-5,Math.min(5,dy*.18)));return;}drag=p;render();});
+canvas.addEventListener('pointerup',e=>{if(!drag)return;let end=point(e),start=drag;drag=null;if(gameState.phase==='running'&&gameState.carrier){let dx=end.x-start.x,dy=end.y-start.y;if(Math.abs(dy)>Math.abs(dx))runForward(dy>0?4:-4);else if(dx>15){let p=gameState.carrier;runForward(0,true);$('hint').textContent='DIVE FORWARD!';}render();return;}if(gameState.phase!=='ready')return;let qb=players[0],dx=qb.x-start.x,dy=qb.y-start.y;if(Math.hypot(dx,dy)<20){$('hint').textContent='PULL BACK FROM THE QB TO AIM YOUR PASS.';return;}let target={x:Math.max(qb.x+45,Math.min(W-40,qb.x+dx*1.8)),y:Math.max(35,Math.min(H-35,qb.y+dy*1.8))};$('hint').textContent='PASS IN THE AIR…';startPass(target);});
+$('timeout').onclick=()=>{$('hint').textContent=gameState.timeouts>0?'TIMEOUT CALLED · '+(--gameState.timeouts)+' LEFT.':'NO TIMEOUTS LEFT.';};
+$('audible').onclick=()=>{formation=(formation+1)%3;setupPlayers();$('hint').textContent='AUDIBLE · NEW ROUTES SET.';};
+$('timeout').addEventListener('contextmenu',e=>e.preventDefault());
+$('game').addEventListener('click',e=>{if(e.target.id==='game')return;});
+document.addEventListener('keydown',e=>{if($('game').classList.contains('hidden'))return;if(e.key==='Escape')showModal('PAUSED','Take a breather, Coach.',[['RESUME',closeModal],['QUIT GAME',()=>{closeModal();show('hub');}]]);if(gameState.phase==='running'&&gameState.carrier){if(e.key==='ArrowUp')runForward(-4);if(e.key==='ArrowDown')runForward(4);if(e.key==='ArrowRight')runForward(0,true);}});
 })();
 </script>
 </body>
