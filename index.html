@@ -188,7 +188,7 @@ function drawRoutes(){
   players.filter(p=>p.route!==undefined).forEach(p=>{let pts=routePoints(p);ctx.strokeStyle=['#4caf50','#29b6f6','#ffdf55','#f28b42'][p.route%4];ctx.lineWidth=4;ctx.setLineDash([8,7]);ctx.beginPath();pts.forEach((pt,i)=>i?ctx.lineTo(pt.x,pt.y):ctx.moveTo(pt.x,pt.y));ctx.stroke();ctx.setLineDash([]);let z=pts[pts.length-1];ctx.fillStyle=ctx.strokeStyle;ctx.beginPath();ctx.arc(z.x,z.y,5,0,Math.PI*2);ctx.fill();});
  }
 }
-const playerPalette={W:'#ffffff',O:'#2b59c3',B:'#2b59c3',S:'#d49a6a',D:'#8c533e',F:'#c5d1e0',K:'#751c12',G:'#315f20'};
+const playerPalette={W:'#ffffff',O:'#2b59c3',B:'#2b59c3',S:'#d49a6a',D:'#8c533e',F:'#c5d1e0',K:'#2b59c3',G:'#315f20'};
 const standingSprite=[
 "...............","......WWW......",".....WOWWW.....",".....WWSS......",".....WWFS......","...OOOOFF......","..WOOOOOKW.....","..SSSSSSKS.....","...SSSSSKS.....","....OOOOKO.....","....OOOOOO.....","....OOOOOO.....",".....OW.WW.....",".....OW.OO.....",".....OO.OO.....","....GWWWWWWG...","...GGGGGGGGGG..","....GGGGGGGG...","..............."];
 const runningSprite=[
@@ -202,7 +202,7 @@ ctx.fillStyle='rgba(0,0,0,.3)';ctx.fillRect(left+7*pixel,top+17*pixel,24,5);if(p
 for(let y=0;y<grid.length;y++)for(let x=0;x<grid[y].length;x++){
 const ch=grid[y][x];if(ch==='.')continue;
 let color=playerPalette[ch]||'#fff';
-if(ch==='O'||ch==='B')color=jersey;
+if(ch==='O'||ch==='B'||ch==='K')color=jersey;
 if(ch==='S'||ch==='D')color=skin;
 if(ch==='G')color='#315f20';
 ctx.fillStyle=color;ctx.fillRect(left+x*pixel,top+y*pixel,pixel,pixel);
@@ -232,7 +232,7 @@ ctx.fillStyle='rgba(255,255,255,.88)';ctx.font='bold 28px monospace';ctx.textAli
 let los=yardToX(gameState.spot);pixelRect(los,228,3,312,'#2f8ff0');pixelRect(Math.min(W-8,los+gameState.toGo*19.2),228,3,312,'#ffda48');
 // Player sprites, blue offense and red defense
 drawRoutes();players.forEach((p,i)=>drawPlayer(p,'blue','right',i));defenders.forEach((p,i)=>drawPlayer(p,'red','left',i+1));if(gameState.phase==='defense'&&gameState.carrier)drawPlayer(gameState.carrier,'red','left',12);
-if(ball){ctx.fillStyle='#71391e';ctx.fillRect(Math.round(ball.x-5),Math.round(ball.y-2),10,4);ctx.fillStyle='#fff';ctx.fillRect(Math.round(ball.x-1),Math.round(ball.y-1),1,2);}
+if(ball){ctx.fillStyle='#71391e';ctx.fillRect(Math.round(ball.x-9),Math.round(ball.y-4),18,8);ctx.fillStyle='#fff';ctx.fillRect(Math.round(ball.x-1),Math.round(ball.y-3),2,6);ctx.fillRect(Math.round(ball.x-5),Math.round(ball.y-1),2,2);ctx.fillRect(Math.round(ball.x+3),Math.round(ball.y-1),2,2);}
 if(drag){ctx.strokeStyle='#fff';ctx.lineWidth=4;ctx.setLineDash([10,9]);ctx.beginPath();ctx.moveTo(players[0].x,players[0].y-18);ctx.lineTo(drag.x,drag.y);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(drag.x,drag.y,7,0,Math.PI*2);ctx.fill();}
 if((gameState.phase==='running'||gameState.phase==='defense')&&gameState.carrier){ctx.strokeStyle='#ffed8a';ctx.lineWidth=4;ctx.beginPath();ctx.arc(gameState.carrier.x,gameState.carrier.y,24,0,Math.PI*2);ctx.stroke();}
 }
@@ -313,9 +313,11 @@ function showModal(title,text,buttons){$('modalTitle').textContent=title;$('moda
 function closeModal(){$('modal').classList.add('hidden');}
 function kickMode(){closeModal();showModal('KICKING','Tap the meter to set power, then tap again to set direction.',[['KICK',()=>{closeModal();gameState.score+=1;gameState.phase='ready';setupForNext();$('hint').textContent='GOOD KICK · 1 POINT.';updateHUD();}],['GO FOR TWO',()=>{closeModal();$('hint').textContent='2-POINT TRY · RUN PLAY OR THROW.';}]]);}
 $('hikeBtn').onclick=()=>{if(gameState.phase!=='ready'||gameState.over)return;hike();};
+// A tap anywhere in the gameplay screen snaps the ball; controls still work normally.
+$('game').addEventListener('pointerdown',e=>{if(gameState.phase==='ready'&&!gameState.over&&e.target.id!=='pauseGame'&&e.target.id!=='hikeBtn'){hike();}});
 canvas.addEventListener('pointerdown',e=>{if(gameState.phase==='running'&&gameState.carrier){drag=point(e);dragStart={...drag};canvas.setPointerCapture(e.pointerId);return;}if(gameState.phase!=='live'||gameState.over)return;let p=point(e),qb=players[0],rb=players[1];if(Math.hypot(p.x-rb.x,p.y-rb.y)<42){gameState.carrier=rb;gameState.phase='running';ball={x:rb.x+12,y:rb.y-7};$('hint').textContent='HANDOFF! RUNNING BACK HAS THE BALL · SWIPE TO DODGE.';runForward(0);return;}if(Math.hypot(p.x-qb.x,p.y-qb.y)<125||p.x<qb.x+70){drag=p;dragStart={...p};canvas.setPointerCapture(e.pointerId);render();}});
 canvas.addEventListener('pointermove',e=>{if(!drag)return;let p=point(e);drag=p;if(gameState.phase==='running'&&gameState.carrier){return;}render();});
-canvas.addEventListener('pointerup',e=>{if(!drag)return;let end=point(e),start=dragStart||drag;drag=null;dragStart=null;if(gameState.phase==='running'&&gameState.carrier){let dx=end.x-start.x,dy=end.y-start.y;if(Math.abs(dy)>Math.abs(dx))runForward(dy>0?4:-4);else if(dx>15){let p=gameState.carrier;runForward(0,true);$('hint').textContent='DIVE FORWARD!';}render();return;}if(gameState.phase!=='live')return;let qb=players[0],dx=end.x-qb.x,dy=end.y-qb.y;if(Math.hypot(dx,dy)<20){$('hint').textContent='PULL BACK FROM THE QB TO AIM YOUR PASS.';return;}let target={x:Math.max(qb.x+45,Math.min(W-40,qb.x+dx*1.8)),y:Math.max(35,Math.min(H-35,qb.y+dy*1.8))};$('hint').textContent='PASS IN THE AIR…';startPass(target);});
+canvas.addEventListener('pointerup',e=>{if(!drag)return;let end=point(e),start=dragStart||drag;drag=null;dragStart=null;if(gameState.phase==='running'&&gameState.carrier){let dx=end.x-start.x,dy=end.y-start.y;if(Math.abs(dy)>Math.abs(dx))runForward(dy>0?4:-4);else if(dx>15){let p=gameState.carrier;runForward(0,true);$('hint').textContent='DIVE FORWARD!';}render();return;}if(gameState.phase!=='live')return;let qb=players[0],dx=end.x-qb.x,dy=end.y-qb.y;if(Math.hypot(dx,dy)<20){$('hint').textContent='PULL BACK FROM THE QB TO AIM YOUR PASS.';return;}let throwScale=Math.max(3.2,Math.min(4.2,Math.hypot(dx,dy)>1?3.8:3.8));let target={x:Math.max(qb.x+170,Math.min(W-35,qb.x+dx*throwScale)),y:Math.max(245,Math.min(515,qb.y+dy*throwScale))};$('hint').textContent='PASS IN THE AIR…';startPass(target);});
 $('game').addEventListener('click',e=>{if(e.target.id==='game')return;});
 document.addEventListener('keydown',e=>{if($('game').classList.contains('hidden'))return;if(e.key==='Escape')showModal('PAUSED','Take a breather, Coach.',[['RESUME',closeModal],['QUIT GAME',()=>{closeModal();show('hub');}]]);if(gameState.phase==='running'&&gameState.carrier){if(e.key==='ArrowUp')runForward(-4);if(e.key==='ArrowDown')runForward(4);if(e.key==='ArrowRight')runForward(0,true);}});
 })();
