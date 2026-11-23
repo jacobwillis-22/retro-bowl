@@ -228,7 +228,7 @@ for(let x=32;x<928;x+=28){if(x>220&&x<740&&x%56===0)continue;let blue=x>210&&x<7
 const focus=gameState.carrier||players[0];cameraX=Math.max(0,Math.min(820,(focus?.x||480)-W*.48));
 ctx.save();ctx.translate(-cameraX,0);
 // Long continuous turf lets the camera scroll without exposing empty space.
-pixelRect(-cameraX,220,1900,320,'#ffffff');
+pixelRect(0,220,1900,320,'#ffffff');
 for(let i=0;i<20;i++)pixelRect(i*96,228,96,312,i%2===0?'#38761d':'#438524');
 for(let x=84;x<=1800;x+=96){pixelRect(x,228,2,312,'rgba(255,255,255,.8)');}
 for(let x=20;x<1900;x+=20){pixelRect(x,236,2,5,'#fff');pixelRect(x,356,2,5,'#fff');pixelRect(x,408,2,5,'#fff');pixelRect(x,530,2,5,'#fff');}
