@@ -250,7 +250,7 @@ function aimVelocity(){
  const vx=7.2+power*(7.5+stats.strength*1.15);
  // Pulling down creates a high lob; pulling up creates a flatter bullet.
  const angle=Math.max(-.48,Math.min(.78,dy/Math.max(55,pull)*.95));
- const vy=bulletMode?(-1.1-angle*2.0):(-4.1-angle*6.2);
+ const vy=bulletMode?(-1.0-angle*1.7):(-7.6-angle*5.4);
  return {vx,vy,power,stats};
 }
 function drawAimArc(){
@@ -375,9 +375,9 @@ $('game').addEventListener('pointermove',e=>{
 $('game').addEventListener('pointerup',e=>{
  activePointers.delete(e.pointerId);
  if(aimPointer!==e.pointerId)return;
- const pull=aimPull;aimPointer=null;aimPull=null;
+ const pull=aimPull;aimPointer=null;
  if(pull&&gameState.phase==='live')startPass(pull);
- bulletMode=activePointers.size>0;render();
+ aimPull=null;bulletMode=activePointers.size>0;render();
 });
 $('game').addEventListener('pointercancel',e=>{activePointers.delete(e.pointerId);if(aimPointer===e.pointerId){aimPointer=null;aimPull=null;bulletMode=false;render();}});
 // Running back controls remain swipe-based on the field.
