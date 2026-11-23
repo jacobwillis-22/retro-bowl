@@ -145,6 +145,9 @@ $('soundBtn').onclick=$('soundOption').onclick=()=>{sound=!sound;$('soundBtn').t
 $('pauseGame').onclick=()=>showModal('GAME PAUSED','Take a breather, Coach.',[['RESUME',closeModal],['QUIT GAME',()=>{closeModal();cancelAnimationFrame(raf);show('hub');updateHub();}]]);
 const canvas=$('field'),ctx=canvas.getContext('2d'),W=960,H=540;
 let gameState={},players=[],defenders=[],ball=null,drag=null,dragStart=null,raf=0,formation=0;
+// QB ratings drive the slingshot throw. Ratings are on a 1–10 scale.
+const qbStats={accuracy:7,strength:7,stamina:8,speed:6};
+let aimPull=null,aimPointer=null,activePointers=new Set(),bulletMode=false,throwScatter=0;
 const playBook=[
  {name:'SPLIT RECEIVER',spots:[[0,-132],[0,132],[-48,-34],[-48,34]],routes:[[[0,-132],[75,-132],[170,-132],[265,-112]],[[0,132],[65,132],[130,95],[205,95]], [[-48,-34],[20,-55],[105,-55]], [[-48,34],[35,34],[95,10]]]},
  {name:'CROSSING ROUTES',spots:[[0,-145],[0,145],[-45,-28],[-45,28]],routes:[[[0,-145],[65,-145],[145,-70],[235,-70]],[[0,145],[65,145],[145,65],[235,65]], [[-45,-28],[35,-28],[95,-90]], [[-45,28],[35,28],[95,90]]]},
@@ -233,9 +236,37 @@ let los=yardToX(gameState.spot);pixelRect(los,228,3,312,'#2f8ff0');pixelRect(Mat
 // Player sprites, blue offense and red defense
 drawRoutes();players.forEach((p,i)=>drawPlayer(p,'blue','right',i));defenders.forEach((p,i)=>drawPlayer(p,'red','left',i+1));if(gameState.phase==='defense'&&gameState.carrier)drawPlayer(gameState.carrier,'red','left',12);
 if(ball){ctx.fillStyle='#71391e';ctx.fillRect(Math.round(ball.x-9),Math.round(ball.y-4),18,8);ctx.fillStyle='#fff';ctx.fillRect(Math.round(ball.x-1),Math.round(ball.y-3),2,6);ctx.fillRect(Math.round(ball.x-5),Math.round(ball.y-1),2,2);ctx.fillRect(Math.round(ball.x+3),Math.round(ball.y-1),2,2);}
-if(drag){ctx.strokeStyle='#fff';ctx.lineWidth=4;ctx.setLineDash([10,9]);ctx.beginPath();ctx.moveTo(players[0].x,players[0].y-18);ctx.lineTo(drag.x,drag.y);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(drag.x,drag.y,7,0,Math.PI*2);ctx.fill();}
+if(aimPull&&gameState.phase==='live')drawAimArc();
 if((gameState.phase==='running'||gameState.phase==='defense')&&gameState.carrier){ctx.strokeStyle='#ffed8a';ctx.lineWidth=4;ctx.beginPath();ctx.arc(gameState.carrier.x,gameState.carrier.y,24,0,Math.PI*2);ctx.stroke();}
 }
+function currentQBStats(){
+ let fatigue=Math.max(0,(gameState.quarter||1)-2)*Math.max(0,9-qbStats.stamina)*.07;
+ return {accuracy:Math.max(1,qbStats.accuracy-fatigue*2),strength:Math.max(1,qbStats.strength-fatigue*3),speed:qbStats.speed};
+}
+function aimVelocity(){
+ if(!aimPull)return null;
+ const stats=currentQBStats(),dx=aimPull.start.x-aimPull.end.x,dy=aimPull.end.y-aimPull.start.y;
+ const pull=Math.hypot(dx,dy),power=Math.max(0,Math.min(1,pull/190));
+ const vx=7.2+power*(7.5+stats.strength*1.15);
+ // Pulling down creates a high lob; pulling up creates a flatter bullet.
+ const angle=Math.max(-.48,Math.min(.78,dy/Math.max(55,pull)*.95));
+ const vy=bulletMode?(-1.1-angle*2.0):(-4.1-angle*6.2);
+ return {vx,vy,power,stats};
+}
+function drawAimArc(){
+ const v=aimVelocity();if(!v)return;const qb=players[0],accuracy=v.stats.accuracy;
+ const visible=.18+(accuracy/10)*.82,steps=Math.max(5,Math.round(28*visible));
+ ctx.save();ctx.fillStyle='#fff';ctx.globalAlpha=.9;
+ for(let i=1;i<=steps;i++){
+  const t=i*2.5, x=qb.x+18+v.vx*t, y=qb.y-12+v.vy*t+.19*t*t;
+  if(x>W-18||y>520||y<225)break;
+  if(i%2===0){ctx.beginPath();ctx.arc(x,y,2.5,0,Math.PI*2);ctx.fill();}
+ }
+ ctx.restore();
+ const endX=aimPull.end.x,endY=aimPull.end.y;
+ ctx.strokeStyle=bulletMode?'#ffe36b':'#ffffff';ctx.lineWidth=2;ctx.setLineDash([4,6]);ctx.beginPath();ctx.moveTo(endX,endY);ctx.lineTo(aimPull.start.x,aimPull.start.y);ctx.stroke();ctx.setLineDash([]);
+}
+function clientToField(e){let r=canvas.getBoundingClientRect();return{x:Math.max(0,Math.min(W,(e.clientX-r.left)*W/r.width)),y:Math.max(0,Math.min(H,(e.clientY-r.top)*H/r.height))};}
 function updateHUD(){$('score').textContent=gameState.score;$('clock').textContent=gameState.quarter+'Q · '+Math.max(0,Math.floor(gameState.clock/60))+':'+String(Math.max(0,gameState.clock%60)).padStart(2,'0');$('down').textContent=gameState.down+' & '+(gameState.toGo>=90?'GOAL':gameState.toGo);$('ballSpot').textContent=gameState.spot+' YD';$('hikeBtn').textContent=gameState.phase==='ready'?'HIKE ▶':gameState.phase==='live'?'LIVE':'HIKE ▶';$('hikeBtn').disabled=gameState.phase!=='ready';}
 function point(e){let r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height};}
 function nearest(arr,p){return arr.reduce((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)<Math.hypot(b.x-p.x,b.y-p.y)?a:b);}
@@ -246,7 +277,7 @@ function moveAlong(points,t){
 }
 function hike(){
  if(snapStarted||gameState.phase!=='ready')return;
- snapStarted=true;gameState.phase='live';gameState.over=false;routeProgress=0;qbPressure=0;updateHUD();
+ snapStarted=true;gameState.phase='live';gameState.over=false;routeProgress=0;qbPressure=0;aimPull=null;bulletMode=false;updateHUD();
  $('hint').textContent='HIKE! RECEIVERS ARE RUNNING THEIR ROUTES · FIND THE OPEN MAN.';
  let last=performance.now();
  function tick(now){
@@ -262,17 +293,32 @@ function hike(){
  }
  cancelAnimationFrame(raf);raf=requestAnimationFrame(tick);
 }
-function startPass(target){
- if(gameState.phase==='ready')hike();
- if(gameState.phase!=='live')return;
- let qb=players[0],receiver=nearest(players.filter(p=>p.route!==undefined),target),t=0;
- gameState.phase='passing';gameState.over=true;ball={x:qb.x+15,y:qb.y-12};cancelAnimationFrame(raf);
- function fly(){t+=.045;advanceRoutes(.022);defenders.slice(0,5).forEach(d=>{d.x-=.18;});ball.x=qb.x+15+(target.x-qb.x-15)*t;ball.y=qb.y-12+(target.y-qb.y+12)*t-Math.sin(t*Math.PI)*55;render();if(t<1){raf=requestAnimationFrame(fly);return;}
- let coverage=Math.min(...defenders.map(d=>Math.hypot(d.x-target.x,d.y-target.y))),catchDist=Math.hypot(receiver.x-target.x,receiver.y-target.y);
- if(catchDist<145&&coverage>catchDist*.72){gameState.carrier=receiver;ball={x:receiver.x+12,y:receiver.y-7};gameState.phase='running';gameState.over=false;$('hint').textContent='CAUGHT IT! SWIPE TO DODGE THE DEFENSE.';runForward(0);}
- else{gameState.phase='ready';gameState.over=false;gameState.down++;$('hint').textContent='INCOMPLETE PASS · '+(gameState.down>4?'TURNOVER ON DOWNS':'NEXT PLAY');if(gameState.down>4)startDefense();else setupForNext();}
+function startPass(pull){
+ if(gameState.phase!=='live'||!pull)return;
+ const qb=players[0],v=aimVelocity();if(!v)return;
+ const pullDistance=Math.hypot(pull.start.x-pull.end.x,pull.start.y-pull.end.y);
+ if(pullDistance<14){$('hint').textContent='PULL BACK FARTHER TO THROW · RELEASE TO PASS.';return;}
+ const stats=v.stats,flightFrames=Math.max(22,Math.min(62,Math.round((v.vx>0?(W-qb.x)/v.vx:30)*.72)));
+ const scatter=(11-stats.accuracy)*1.8;const landingY=qb.y-12+v.vy*flightFrames+.19*flightFrames*flightFrames;
+ const landingX=qb.x+18+v.vx*flightFrames;
+ const target={x:Math.min(W-25,landingX),y:Math.max(245,Math.min(515,landingY+(Math.random()-.5)*scatter*2))};
+ let receiver=nearest(players.filter(p=>p.route!==undefined),target),t=0,ballX=qb.x+15,ballY=qb.y-12;
+ gameState.phase='passing';gameState.over=true;aimPull=null;ball={x:ballX,y:ballY};cancelAnimationFrame(raf);
+ function fly(){
+  t+=1;advanceRoutes(.018);
+  const seconds=t;ballX=qb.x+18+v.vx*seconds;ballY=qb.y-12+v.vy*seconds+.19*seconds*seconds;
+  // Defenders react to the pass, but cannot teleport to the landing spot.
+  defenders.forEach(d=>{let tx=ballX,ty=ballY,dx=tx-d.x,dy=ty-d.y,dist=Math.hypot(dx,dy)||1;d.x+=dx/dist*.85;d.y+=dy/dist*.85;});
+  ball={x:ballX,y:ballY};render();
+  let interceptor=defenders.find(d=>Math.hypot(d.x-ballX,d.y-ballY)<17);
+  if(interceptor){gameState.phase='ready';gameState.over=false;gameState.down=1;gameState.spot=Math.max(10,Math.min(90,Math.round(interceptor.x/19.2)));$('hint').textContent='INTERCEPTED! THE DEFENSE PICKED IT OFF.';setupForNext();return;}
+  if(t<flightFrames&&ballX<W-20&&ballY<535){raf=requestAnimationFrame(fly);return;}
+  const catchDist=Math.hypot(receiver.x-target.x,receiver.y-target.y),coverage=Math.min(...defenders.map(d=>Math.hypot(d.x-receiver.x,d.y-receiver.y)));
+  const catchChance=Math.max(.25,Math.min(.96,.38+stats.accuracy*.055+(roster[1][2]*.025)));
+  if(catchDist<85&&coverage>24&&Math.random()<catchChance){gameState.carrier=receiver;ball={x:receiver.x+12,y:receiver.y-7};gameState.phase='running';gameState.over=false;$('hint').textContent='CAUGHT IT! LEAD YOUR RECEIVER AND DODGE THE DEFENSE.';runForward(0);}
+  else{gameState.phase='ready';gameState.over=false;gameState.down++;$('hint').textContent='INCOMPLETE PASS · '+(gameState.down>4?'TURNOVER ON DOWNS':'NEXT PLAY');if(gameState.down>4)startDefense();else setupForNext();}
  }
- fly();
+ raf=requestAnimationFrame(fly);
 }
 function startDefense(){
  gameState.phase='defense';gameState.over=false;snapStarted=true;
@@ -315,9 +361,29 @@ function kickMode(){closeModal();showModal('KICKING','Tap the meter to set power
 $('hikeBtn').onclick=()=>{if(gameState.phase!=='ready'||gameState.over)return;hike();};
 // A tap anywhere in the gameplay screen snaps the ball; controls still work normally.
 $('game').addEventListener('pointerdown',e=>{if(gameState.phase==='ready'&&!gameState.over&&e.target.id!=='pauseGame'&&e.target.id!=='hikeBtn'){hike();}});
-canvas.addEventListener('pointerdown',e=>{if(gameState.phase==='running'&&gameState.carrier){drag=point(e);dragStart={...drag};canvas.setPointerCapture(e.pointerId);return;}if(gameState.phase!=='live'||gameState.over)return;let p=point(e),qb=players[0],rb=players[1];if(Math.hypot(p.x-rb.x,p.y-rb.y)<42){gameState.carrier=rb;gameState.phase='running';ball={x:rb.x+12,y:rb.y-7};$('hint').textContent='HANDOFF! RUNNING BACK HAS THE BALL · SWIPE TO DODGE.';runForward(0);return;}if(Math.hypot(p.x-qb.x,p.y-qb.y)<125||p.x<qb.x+70){drag=p;dragStart={...p};canvas.setPointerCapture(e.pointerId);render();}});
-canvas.addEventListener('pointermove',e=>{if(!drag)return;let p=point(e);drag=p;if(gameState.phase==='running'&&gameState.carrier){return;}render();});
-canvas.addEventListener('pointerup',e=>{if(!drag)return;let end=point(e),start=dragStart||drag;drag=null;dragStart=null;if(gameState.phase==='running'&&gameState.carrier){let dx=end.x-start.x,dy=end.y-start.y;if(Math.abs(dy)>Math.abs(dx))runForward(dy>0?4:-4);else if(dx>15){let p=gameState.carrier;runForward(0,true);$('hint').textContent='DIVE FORWARD!';}render();return;}if(gameState.phase!=='live')return;let qb=players[0],dx=end.x-qb.x,dy=end.y-qb.y;if(Math.hypot(dx,dy)<20){$('hint').textContent='PULL BACK FROM THE QB TO AIM YOUR PASS.';return;}let throwScale=Math.max(3.2,Math.min(4.2,Math.hypot(dx,dy)>1?3.8:3.8));let target={x:Math.max(qb.x+170,Math.min(W-35,qb.x+dx*throwScale)),y:Math.max(245,Math.min(515,qb.y+dy*throwScale))};$('hint').textContent='PASS IN THE AIR…';startPass(target);});
+// Slingshot controls work from anywhere in the game area, not just on the QB.
+$('game').addEventListener('pointerdown',e=>{
+ if(e.target.id==='pauseGame'||e.target.id==='hikeBtn')return;
+ activePointers.add(e.pointerId);
+ if(gameState.phase==='ready'&&!gameState.over){hike();}
+ if(gameState.phase==='live'&&!gameState.over&&!aimPointer){aimPointer=e.pointerId;const p=clientToField(e);aimPull={start:p,end:p};$('game').setPointerCapture(e.pointerId);render();}
+ else if(gameState.phase==='live'&&aimPointer!==e.pointerId){bulletMode=true;}
+});
+$('game').addEventListener('pointermove',e=>{
+ if(aimPointer===e.pointerId&&aimPull){aimPull.end=clientToField(e);render();}
+});
+$('game').addEventListener('pointerup',e=>{
+ activePointers.delete(e.pointerId);
+ if(aimPointer!==e.pointerId)return;
+ const pull=aimPull;aimPointer=null;aimPull=null;
+ if(pull&&gameState.phase==='live')startPass(pull);
+ bulletMode=activePointers.size>0;render();
+});
+$('game').addEventListener('pointercancel',e=>{activePointers.delete(e.pointerId);if(aimPointer===e.pointerId){aimPointer=null;aimPull=null;bulletMode=false;render();}});
+// Running back controls remain swipe-based on the field.
+canvas.addEventListener('pointerdown',e=>{if(gameState.phase==='running'&&gameState.carrier){drag=point(e);dragStart={...drag};canvas.setPointerCapture(e.pointerId);}});
+canvas.addEventListener('pointermove',e=>{if(drag){drag=point(e);}});
+canvas.addEventListener('pointerup',e=>{if(!drag)return;let end=point(e),start=dragStart||drag;drag=null;dragStart=null;if(gameState.phase==='running'&&gameState.carrier){let dx=end.x-start.x,dy=end.y-start.y;if(Math.abs(dy)>Math.abs(dx))runForward(dy>0?4:-4);else if(dx>15){runForward(0,true);$('hint').textContent='DIVE FORWARD!';}render();}});
 $('game').addEventListener('click',e=>{if(e.target.id==='game')return;});
 document.addEventListener('keydown',e=>{if($('game').classList.contains('hidden'))return;if(e.key==='Escape')showModal('PAUSED','Take a breather, Coach.',[['RESUME',closeModal],['QUIT GAME',()=>{closeModal();show('hub');}]]);if(gameState.phase==='running'&&gameState.carrier){if(e.key==='ArrowUp')runForward(-4);if(e.key==='ArrowDown')runForward(4);if(e.key==='ArrowRight')runForward(0,true);}});
 })();
