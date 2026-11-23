@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1475d1">
+  <title>Retro Bowl — Sunday Football</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Condensed:wght@700;800;900&display=swap');
+    :root{--blue:#1475d1;--navy:#102c4b;--cream:#fff4d7;--gold:#f8c64e;--green:#32864b}
+    *{box-sizing:border-box} body{margin:0;background:#0d2033;color:white;font-family:'Roboto Condensed',Arial,sans-serif;min-height:100vh;display:grid;place-items:center;padding:16px}
+    button{font:inherit;cursor:pointer;border:0}
+    .shell{width:min(100%,960px);min-height:min(740px,94vh);background:var(--blue);border:6px solid #071b2e;box-shadow:0 18px 0 #061523,0 24px 55px #0008;position:relative;overflow:hidden;display:flex;flex-direction:column}
+    .topbar{height:54px;background:#0e4f91;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-weight:900;letter-spacing:2px;border-bottom:4px solid #0a396b}
+    .pixel{font-family:'Press Start 2P',monospace}.screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;text-align:center;position:relative}
+    .sky{position:absolute;inset:0;background:linear-gradient(#4bb1ee 0%,#9ed9ef 52%,#d8e9d5 53%,#d8e9d5 100%);z-index:0}
+    .stadium{position:absolute;left:0;right:0;bottom:190px;height:125px;background:repeating-linear-gradient(90deg,#536477 0 8px,#718196 8px 16px);border-top:12px solid #d6e3ed;opacity:.9}
+    .crowd{position:absolute;left:0;right:0;bottom:190px;height:90px;background:radial-gradient(circle,#f8d66d 2px,transparent 3px),radial-gradient(circle,#e86f63 2px,transparent 3px),radial-gradient(circle,#e8edf0 2px,transparent 3px);background-size:17px 17px,23px 19px,13px 21px;background-position:0 0,7px 8px,12px 2px}
+    .title-wrap{z-index:2;margin-top:-120px;text-shadow:4px 5px 0 #153e68}
+    .title{font-size:clamp(42px,9vw,88px);line-height:.98;font-weight:900;letter-spacing:-3px;color:#fff}.title span{color:#ffe17a}
+    .subtitle{font-size:18px;letter-spacing:5px;margin-top:15px;font-weight:900}
+    .football{font-size:58px;margin:22px 0 10px;filter:drop-shadow(4px 5px 0 #183e5c)}
+    .start{z-index:2;background:#f8c64e;color:#17334d;padding:17px 34px;font-size:22px;font-weight:900;letter-spacing:2px;box-shadow:0 6px 0 #a66b22;margin-top:12px;transition:transform .12s,filter .12s}.start:hover{transform:translateY(-3px);filter:brightness(1.08)}.start:active{transform:translateY(4px);box-shadow:0 2px 0 #a66b22}
+    .field-art{position:absolute;bottom:0;left:0;right:0;height:190px;background:repeating-linear-gradient(0deg,#2f8b4c 0 38px,#277a42 38px 76px);border-top:8px solid #fff}
+    .field-art:before{content:' ';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),#ffffff55 calc(10% - 2px) 10%)}.yard{position:absolute;left:0;right:0;top:50%;border-top:3px solid #ffffff99}
+    .footer{z-index:2;position:absolute;bottom:10px;font-size:11px;letter-spacing:2px;color:#fff;text-shadow:1px 2px #17334d}
+    .panel{z-index:2;width:min(100%,620px);background:#fff4d7;color:#18334c;border:5px solid #17334c;box-shadow:8px 8px 0 #092d50;padding:24px}
+    .panel h2{font-size:clamp(22px,4vw,34px);margin:0 0 16px}.panel p{font-size:18px;line-height:1.35;margin:8px 0 18px}
+    .menu-buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px}.menu-buttons button,.action{background:#1475d1;color:#fff;padding:14px 10px;font-size:18px;font-weight:900;border:3px solid #103a60;box-shadow:0 4px 0 #103a60}.menu-buttons button:hover,.action:hover{filter:brightness(1.13)}
+    .muted{opacity:.72;font-size:13px!important}
+    .game-screen{padding:0;justify-content:flex-start;background:#163e5b}.hud{width:100%;display:flex;justify-content:space-between;gap:8px;padding:12px 16px;background:#102c4b;font-weight:900;font-size:17px;z-index:2}.hud span{white-space:nowrap}
+    canvas{width:100%;height:auto;display:block;touch-action:none;image-rendering:pixelated;background:#32864b}
+    .game-help{background:#fff4d7;color:#18334c;padding:12px 16px;font-size:15px;font-weight:800;width:100%;text-align:center}
+    .game-actions{display:flex;gap:10px;padding:10px;justify-content:center;background:#102c4b;width:100%}
+    .game-actions button{padding:10px 18px;background:#f8c64e;color:#17334d;font-weight:900}
+    .hidden{display:none!important}
+    @media(max-width:560px){body{padding:0}.shell{min-height:100vh;border-width:0}.topbar{height:46px}.screen{padding:18px 12px}.panel{padding:18px}.menu-buttons{grid-template-columns:1fr}.hud{font-size:13px;padding:10px 8px}.game-help{font-size:13px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar"><span class="pixel" style="font-size:12px">SUNDAY</span><span>FOOTBALL LEAGUE</span><span class="pixel" style="font-size:10px">'26</span></header>
+    <section id="titleScreen" class="screen">
+      <div class="sky"></div><div class="stadium"></div><div class="crowd"></div>
+      <div class="title-wrap"><div class="title">RETRO<br><span>BOWL</span></div><div class="subtitle">SUNDAY FOOTBALL</div><div class="football">🏈</div></div>
+      <button class="start" id="startBtn">TAP TO PLAY</button>
+      <div class="field-art"><div class="yard"></div></div>
+      <div class="footer">A LITTLE PIXEL FOOTBALL • BIG-TIME DREAMS</div>
+    </section>
+    <section id="menuScreen" class="screen hidden">
+      <div class="panel">
+        <h2 class="pixel">WELCOME, COACH</h2>
+        <p>Your season starts now. Build a team, call the play, and lead your squad to the championship.</p>
+        <div class="menu-buttons"><button id="playBtn">▶ PLAY GAME</button><button id="rosterBtn">TEAM ROSTER</button><button id="seasonBtn">SEASON INFO</button><button id="backBtn">TITLE SCREEN</button></div>
+        <p class="muted" id="menuNote">Exhibition game · 1st quarter · 3:00</p>
+      </div>
+    </section>
+    <section id="rosterScreen" class="screen hidden">
+      <div class="panel"><h2 class="pixel">YOUR ROSTER</h2><p>QB — J. Carter ★★★★☆<br>WR — M. Jackson ★★★★☆<br>WR — T. Brooks ★★★☆☆<br>RB — D. Harris ★★★★☆<br>TE — A. Miller ★★★☆☆</p><button class="action" id="rosterBack">BACK TO MENU</button></div>
+    </section>
+    <section id="seasonScreen" class="screen hidden">
+      <div class="panel"><h2 class="pixel">SEASON ONE</h2><p>Record: 0–0<br>Next opponent: Chicago<br>Goal: Win your division and reach the Retro Bowl.</p><button class="action" id="seasonBack">BACK TO MENU</button></div>
+    </section>
+    <section id="gameScreen" class="screen game-screen hidden">
+      <div class="hud"><span id="scoreText">HOME 0 — 0 AWAY</span><span id="downText">1ST & 10</span><span id="clockText">3:00</span></div>
+      <canvas id="field" width="900" height="500" aria-label="Football field gameplay"></canvas>
+      <div class="game-help" id="gameHelp">DRAG BACK FROM THE QUARTERBACK, AIM, THEN RELEASE TO THROW.</div>
+      <div class="game-actions"><button id="menuGameBtn">QUIT PLAY</button><button id="resetPlayBtn">NEW PLAY</button></div>
+    </section>
+  </main>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const screens = ['titleScreen','menuScreen','rosterScreen','seasonScreen','gameScreen'];
+  function show(id){screens.forEach(s => $(s).classList.toggle('hidden',s!==id));}
+  $('startBtn').onclick=()=>show('menuScreen');
+  $('backBtn').onclick=()=>show('titleScreen');
+  $('rosterBtn').onclick=()=>show('rosterScreen');
+  $('seasonBtn').onclick=()=>show('seasonScreen');
+  $('rosterBack').onclick=$('seasonBack').onclick=()=>show('menuScreen');
+  $('playBtn').onclick=()=>{show('gameScreen');startPlay();};
+  $('menuGameBtn').onclick=()=>show('menuScreen');
+  $('resetPlayBtn').onclick=()=>startPlay();
+
+  const canvas=$('field'),ctx=canvas.getContext('2d');
+  let ball,players,defenders,drag=null,anim=null,score=0,down=1,spot=120,playOver=false;
+  const W=900,H=500;
+  function drawPlayer(x,y,color,number){ctx.fillStyle='#152c40';ctx.fillRect(x-13,y+17,26,7);ctx.fillStyle=color;ctx.fillRect(x-12,y-5,24,25);ctx.fillStyle='#f2c69a';ctx.fillRect(x-9,y-18,18,14);ctx.fillStyle='#fff';ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.fillText(number,x,y+10);}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(let y=0;y<H;y+=80){ctx.fillStyle=(y/80)%2?'#32864b':'#388f51';ctx.fillRect(0,y,W,80);}
+    ctx.strokeStyle='#ffffffbb';ctx.lineWidth=3;
+    for(let x=0;x<=W;x+=90){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();ctx.fillStyle='#fff';ctx.font='18px Arial';ctx.fillText(String(Math.round((x-spot)/9)),x+5,25);}
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,7,H);ctx.fillRect(W-7,0,7,H);
+    ctx.fillStyle='#ffffff22';ctx.fillRect(0,0,spot,H);
+    players.forEach((p,i)=>drawPlayer(p.x,p.y,i===0?'#e8b84c':'#e8e8e8',p.n));
+    defenders.forEach((p,i)=>drawPlayer(p.x,p.y,'#c94e48',i+1));
+    if(ball){ctx.fillStyle='#6b351d';ctx.beginPath();ctx.ellipse(ball.x,ball.y,10,6,-.3,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.stroke();}
+    if(drag){ctx.strokeStyle='#fff';ctx.lineWidth=4;ctx.setLineDash([9,8]);ctx.beginPath();ctx.moveTo(players[0].x,players[0].y-15);ctx.lineTo(drag.x,drag.y);ctx.stroke();ctx.setLineDash([]);}
+    if(playOver){ctx.fillStyle='#102c4bee';ctx.fillRect(245,190,410,105);ctx.fillStyle='#fff';ctx.font='bold 34px Arial';ctx.textAlign='center';ctx.fillText('PLAY COMPLETE',450,235);ctx.font='20px Arial';ctx.fillText('Tap NEW PLAY to line up again',450,270);}
+  }
+  function updateHud(){ $('scoreText').textContent='HOME '+score+' — 0 AWAY';$('downText').textContent=down===4?'4TH & 10':down+'ST & 10';$('clockText').textContent='3:00';}
+  function startPlay(){
+    cancelAnimationFrame(anim);playOver=false;drag=null;
+    players=[{x:spot,y:250,n:'QB'},{x:spot+145,y:115,n:'1'},{x:spot+175,y:380,n:'2'},{x:spot+95,y:175,n:'3'}];
+    defenders=[{x:spot+280,y:175},{x:spot+335,y:305},{x:spot+420,y:245},{x:spot+490,y:115}];
+    ball={x:players[0].x+18,y:players[0].y-10};updateHud();$('gameHelp').textContent='DRAG BACK FROM THE QUARTERBACK, AIM, THEN RELEASE TO THROW.';draw();
+  }
+  function pos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height};}
+  canvas.addEventListener('pointerdown',e=>{if(playOver)return;drag=pos(e);canvas.setPointerCapture(e.pointerId);draw();});
+  canvas.addEventListener('pointermove',e=>{if(drag){drag=pos(e);draw();}});
+  canvas.addEventListener('pointerup',e=>{
+    if(!drag||playOver)return;const end=pos(e),qb=players[0],dx=qb.x-end.x,dy=qb.y-end.y;drag=null;
+    if(Math.hypot(dx,dy)<22){$('gameHelp').textContent='PULL BACK A LITTLE FARTHER TO THROW.';draw();return;}
+    const target={x:Math.max(80,Math.min(850,qb.x+dx*1.7)),y:Math.max(35,Math.min(465,qb.y+dy*1.7))};
+    ball={x:qb.x+15,y:qb.y-10};let t=0;playOver=true;
+    function fly(){t+=.045;ball.x=qb.x+15+(target.x-qb.x-15)*t;ball.y=qb.y-10+(target.y-qb.y+10)*t+Math.sin(t*Math.PI)*-35;draw();
+      if(t<1){anim=requestAnimationFrame(fly);return;}
+      const nearest=players.slice(1).sort((a,b)=>Math.hypot(a.x-target.x,a.y-target.y)-Math.hypot(b.x-target.x,b.y-target.y))[0];
+      const catchDist=Math.hypot(nearest.x-target.x,nearest.y-target.y),defDist=Math.min(...defenders.map(d=>Math.hypot(d.x-target.x,d.y-target.y)));
+      if(catchDist<105&&catchDist<defDist+35){const yards=Math.max(2,Math.round((target.x-spot)/9));spot=Math.min(790,spot+yards*9);$('gameHelp').textContent=target.x>790?'TOUCHDOWN! NICE THROW!':'COMPLETE! '+yards+' YARDS. LINE UP FOR THE NEXT PLAY.';if(target.x>790){score+=7;spot=120;}}
+      else{$('gameHelp').textContent='INCOMPLETE PASS. TRY A DIFFERENT ANGLE.';down++;if(down>4){down=1;spot=120;$('gameHelp').textContent='TURNOVER ON DOWNS. YOUR BALL AGAIN FOR THIS DEMO.';}}
+      updateHud();draw();
+    }fly();
+  });
+})();
+</script>
+</body>
+</html>
