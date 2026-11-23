@@ -248,7 +248,7 @@ function moveAlong(points,t){
 }
 function hike(){
  if(snapStarted||gameState.phase!=='ready')return;
- snapStarted=true;gameState.phase='live';gameState.over=false;routeProgress=0;qbPressure=0;
+ snapStarted=true;gameState.phase='live';gameState.over=false;routeProgress=0;qbPressure=0;updateHUD();
  $('hint').textContent='HIKE! RECEIVERS ARE RUNNING THEIR ROUTES · FIND THE OPEN MAN.';
  let last=performance.now();
  function tick(now){
